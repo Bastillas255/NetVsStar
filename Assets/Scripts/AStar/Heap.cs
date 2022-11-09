@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+//code based on "A* Pathfinding (E04: heap optimization)" by Sebastian Lague (3Dw5d7PlcTM)
 public class Heap<T> where T : IHeapItem<T>
 {
     T[] items;

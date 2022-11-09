@@ -6,6 +6,7 @@ using UnityEngine;
 public class StarGrid : MonoBehaviour
 {
     public bool onlyDisplayPathGizmos;
+    public bool displayGridGizmos;
     public Transform player;
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
@@ -15,7 +16,7 @@ public class StarGrid : MonoBehaviour
     float nodeDiameter;
     int gridSizeX, gridSizeY;
 
-    private void Start()
+    private void Awake()
     {
         nodeDiameter = nodeRadius * 2;
         gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
@@ -70,8 +71,8 @@ public class StarGrid : MonoBehaviour
         {
             for (int y = -1; y <= 1; y++)
             {
-                if (x==0&&y==0)
-                {
+                if ((x==0&&y==0) || (Mathf.Abs(x + y) != 1))//
+                { 
                     continue;
                 }
 
@@ -106,7 +107,7 @@ public class StarGrid : MonoBehaviour
         }
         else
         {
-            if (grid != null)
+            if (grid != null && displayGridGizmos)
             {
                 StarNode playerNode = NodeFromWorldPoint(player.position);
                 foreach (StarNode n in grid)
