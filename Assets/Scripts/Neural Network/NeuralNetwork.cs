@@ -11,7 +11,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     //[Capa][Neurona][Conexión con neurona de capa anterior]
     private float[][][] weights; 
 
-    private float fitness; //El valor de Fitness de la red
+    private float fitness = 0; //El valor de Fitness de la red
 
     ///<summary>
     ///Inicializa la red neuronal con pesos aleatorios
@@ -46,6 +46,21 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         InitWeigths();
 
         CopyWeights(copyNetwork.weights);
+    }
+
+    ///<summary>
+    ///Constructor en base a clonar datos de una Red Neuronal, en caso de usar un archivo en lugar de una clase existente
+    ///</summary>
+    ///<param name="copyLayers">Array de capas o variable "layers"</param>
+    ///<param name="copyNeurons">Array 2D de neuronas o variable "neurons"</param>
+    ///<param name="copyWeights">Array 3D de pesos o variable "weights"</param>
+    ///<param name="copyFitness">Valor de Fitness</param>
+    public NeuralNetwork(int[] copyLayers, float[][] copyNeurons, float[][][] copyWeights, float copyFitness)
+    {
+        CopyLayers(copyLayers);
+        CopyNeurons(copyNeurons);
+        CopyWeights(copyWeights);
+        SetFitness(copyFitness);
     }
 
     private void CopyWeights(float[][][] copyWeights)
@@ -110,6 +125,40 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
 
         weights = weightsList.ToArray(); //Convierte la lista en un Array 3D
+    }
+
+    private void CopyLayers(int[] copyLayers)
+    {
+        layers = new int[copyLayers.Length];
+        for(int i = 0; i < copyLayers.Length; i++)
+        {
+            layers[i] = copyLayers[i];
+        }
+    }
+
+    private void CopyNeurons(float[][] copyNeurons)
+    {
+        InitNeurons();
+        for(int i=0; i<neurons.Length; i++)
+        {
+            for(int j=0; j<neurons[i].Length; j++)
+            {
+                neurons[i][j] = copyNeurons[i][j];
+            }
+        }
+    }
+
+    public int[] GetLayers()
+    {
+        return this.layers;
+    }
+    public float[][] GetNeurons()
+    {
+        return this.neurons;
+    }
+    public float[][][] GetWeights()
+    {
+        return this.weights;
     }
 
     ///<summary>
