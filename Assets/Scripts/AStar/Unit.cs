@@ -5,14 +5,25 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     public Transform target;
-    float speed = 8;
+    public bool isPacmanMoving;
+    float speed = 1.55f;
     Vector3[] path;
     int targetIndex;
+    Vector3 formerLoopPosition;
+
+    private void Start()
+    {
+        formerLoopPosition = Vector3.zero;
+    }
 
     private void Update()
     {
-        PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
-        //this is not optimal
+        //Unit only request path if target has moved
+        if (target.position!=formerLoopPosition)
+        {
+            PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
+        }
+        formerLoopPosition=target.position;
     }
 
     public void OnPathFound(Vector3[] newPath, bool pathSuccessful)

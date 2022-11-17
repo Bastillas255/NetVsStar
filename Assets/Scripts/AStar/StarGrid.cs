@@ -31,7 +31,7 @@ public class StarGrid : MonoBehaviour
             return gridSizeX * gridSizeY;
         }
     }
-
+    
     private void CreateGrid()
     {
         grid = new StarNode[gridSizeX, gridSizeY];
