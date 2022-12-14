@@ -22,6 +22,7 @@ public class Unit : MonoBehaviour
         if (target.position!=formerLoopPosition)
         {
             PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
+            
         }
         formerLoopPosition=target.position;
     }
@@ -38,6 +39,7 @@ public class Unit : MonoBehaviour
 
     IEnumerator FollowPath()
     {
+        Debug.Log("DistJE = " + path.Length);
         Vector3 currentWaypoint = path[0];
         while (true)
         {

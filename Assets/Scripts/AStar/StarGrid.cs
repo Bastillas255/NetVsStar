@@ -109,7 +109,8 @@ public class StarGrid : MonoBehaviour
         {
             if (grid != null && displayGridGizmos)
             {
-                StarNode playerNode = NodeFromWorldPoint(player.position);
+                StarNode playerNode = NodeFromWorldPoint(player.position); //"player" on this context is a*
+                Debug.Log("Enemy (X,Y) = " + playerNode.worldPosition);
                 foreach (StarNode n in grid)
                 {
                     Gizmos.color = (n.walkable) ? Color.white : Color.red;

@@ -6,21 +6,36 @@ public class PacManMovement : MonoBehaviour
 {
     public bool isReady;
     public bool isMoving;
+    public bool isHumanControlled;
 
     Rigidbody rb;
     Vector2 directionPressed;
     //need to import StarGrid, take the neigbours list, and move to the neighbour in the pressed direction
-    StarGrid grid;
+
+    //need to get grid object on scene and then extract starGrid.cs
+    private StarGrid grid;
     int distanceToMove;
     StarNode pacmanNode;
     StarNode allignCheck;
     Vector3 targetPosition;
     float lerpDuration = 1;
 
+    //modules
+    int rewardsCount=11;
+    int turnCount = 0;
+
+    //NN stuff (boomerang copies)
+    private NeuralNetwork net;
+    private bool initilized = false;
+    private Transform hex; //transform where pac man get rewarded for pointing/closing in
+
+
+
     void Start()
     {
         //initialize
-        grid = GetComponentInParent<StarGrid>();
+        //grid = GetComponentInParent<StarGrid>(); //need to change this
+        grid=GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
         rb = GetComponent<Rigidbody>();
         isMoving = false;
 
@@ -32,31 +47,62 @@ public class PacManMovement : MonoBehaviour
 
     void Update()
     {
-        //if (!isMoving)
-        //{
-            directionPressed.x = Input.GetAxisRaw("Horizontal");
-            directionPressed.y = Input.GetAxisRaw("Vertical");
-            Debug.Log(directionPressed);
-            if (directionPressed.magnitude!=0)
+        if (initilized==true)
+        {
+            if (isHumanControlled)
             {
-            //pacman needs to move in grid diameter distances; next line is an example
-            //Debug.DrawLine(transform.position, new Vector3(transform.position.x+ ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius*2)* directionPressed.y), transform.position.z), Color.magenta);
-
-            //doesn't take into account collisions
-            //rb.MovePosition(new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z));
-            //rb.AddForce(new Vector3(((grid.nodeRadius * 2) * directionPressed.x), ((grid.nodeRadius * 2) * directionPressed.y), 0));
-                if (!isMoving)
+                directionPressed.x = Input.GetAxisRaw("Horizontal");
+                directionPressed.y = Input.GetAxisRaw("Vertical");
+                //Debug.Log(directionPressed);
+                if (directionPressed.magnitude != 0)
                 {
-                    isMoving = true;
-                    //move to the next tile
-                    targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
-                    allignCheck = grid.NodeFromWorldPoint(targetPosition);
-                    targetPosition = allignCheck.worldPosition;
-                    StartCoroutine("TileMovement");
+                    //pacman needs to move in grid diameter distances; next line is an example
+                    //Debug.DrawLine(transform.position, new Vector3(transform.position.x+ ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius*2)* directionPressed.y), transform.position.z), Color.magenta);
+
+                    //doesn't take into account collisions
+                    //rb.MovePosition(new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z));
+                    //rb.AddForce(new Vector3(((grid.nodeRadius * 2) * directionPressed.x), ((grid.nodeRadius * 2) * directionPressed.y), 0));
+                    if (!isMoving)
+                    {
+                        isMoving = true;
+                        //modules
+                        //Debug.Log("Player (X,Y) = " + pacmanNode.worldPosition);
+                        turnCount++;
+                        //Debug.Log("Turn = " + turnCount);
+
+                        //move to the next tile
+                        targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
+                        allignCheck = grid.NodeFromWorldPoint(targetPosition);
+                        targetPosition = allignCheck.worldPosition;
+                        StartCoroutine("TileMovement");
+                    }
                 }
-                
             }
-        //}
+            else
+            {
+                float[] inputs = new float[1];
+                inputs[0] = Vector3.Distance(transform.position, hex.position);
+                float[] output = net.FeedForward(inputs);//the information coming back from the NN
+
+                //Debug.Log(output[0] + "," + output[1]); //so output 0 is left & right, 1 is up and down
+
+                if (output[0] * output[0] < output[1] * output[1]) //which has more magnitude? output 0 or 1? 
+                {
+                    directionPressed.x = output[0];
+                }
+                else
+                {
+                    directionPressed.y = output[1];
+                }
+                targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
+                allignCheck = grid.NodeFromWorldPoint(targetPosition);
+                targetPosition = allignCheck.worldPosition;
+                StartCoroutine("TileMovement");
+                Debug.Log(directionPressed);
+                net.AddFitness((1f - Mathf.Abs(inputs[0])));//  what is this?
+            }
+        }
+        
     }
 
     private void OnDrawGizmos()
@@ -69,7 +115,16 @@ public class PacManMovement : MonoBehaviour
         
     }
 
-    
+    //consume the rewards
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Consumable"))
+        {
+            Destroy(other.gameObject);
+            rewardsCount--;
+            //Debug.Log("RewardsLeft = " + rewardsCount);
+        }
+    }
 
     private IEnumerator TileMovement()
     {
@@ -92,9 +147,11 @@ public class PacManMovement : MonoBehaviour
             yield break;
         }
     }
-    //if (collisionCheck.walkable)
-    //{
-    //    rb.MovePosition(targetPosition);
-    //}
-    //yield return new WaitForSeconds(1);
+
+    public void Init(NeuralNetwork net, Transform hex)
+    {
+        this.hex = hex;
+        this.net = net;
+        initilized = true;
+    }
 }

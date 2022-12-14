@@ -27,7 +27,7 @@ public class TurnManager : MonoBehaviour
         if (!pmm.isMoving)
         {
             unit.StopAllCoroutines();
-            Debug.Log("coruutines stoped");
+            //Debug.Log("coroutines stoped");
         }
     }
 }

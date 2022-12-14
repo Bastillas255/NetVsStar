@@ -169,7 +169,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public float[] FeedForward(float[] inputs)
     {
         //Añade los inputs a la matriz de neuronas
-        for(int i = 0; i < layers.Length; i++)
+        for(int i = 0; i < inputs.Length; i++)
         {
             neurons[0][i] = inputs[i];
         }
