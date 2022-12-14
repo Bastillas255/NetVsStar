@@ -45,7 +45,7 @@ public class PacManMovement : MonoBehaviour
     }
 
 
-    void Update()
+    void FixedUpdate()
     {
         if (initilized==true)
         {
@@ -80,29 +80,37 @@ public class PacManMovement : MonoBehaviour
             }
             else
             {
-                float[] inputs = new float[1];
-                inputs[0] = Vector3.Distance(transform.position, hex.position);
+                
+
+                float[] inputs = new float[2];
+                inputs[0] = hex.position.x;
+                inputs[1] = hex.position.y;
                 float[] output = net.FeedForward(inputs);//the information coming back from the NN
 
                 //Debug.Log(output[0] + "," + output[1]); //so output 0 is left & right, 1 is up and down
 
-                if (output[0] * output[0] < output[1] * output[1]) //which has more magnitude? output 0 or 1? 
-                {
-                    directionPressed.x = output[0];
-                }
-                else
-                {
-                    directionPressed.y = output[1];
-                }
-                targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
-                allignCheck = grid.NodeFromWorldPoint(targetPosition);
-                targetPosition = allignCheck.worldPosition;
-                StartCoroutine("TileMovement");
-                Debug.Log(directionPressed);
-                net.AddFitness((1f - Mathf.Abs(inputs[0])));//  what is this?
+                //if (output[0] * output[0] < output[1] * output[1]) //which has more magnitude? output 0 or 1? 
+                //{
+                //    directionPressed.x = output[0];
+                //}
+                //else
+                //{
+                //    directionPressed.y = output[1]; 
+                //}
+                directionPressed.x = output[0];
+                directionPressed.y = output[1];
+
+                //targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
+                //allignCheck = grid.NodeFromWorldPoint(targetPosition);
+                //targetPosition = allignCheck.worldPosition;
+                rb.MovePosition(new Vector3(transform.position.x + ( directionPressed.x), transform.position.y + ( directionPressed.y), transform.position.z));
+
+
+                //Debug.Log(directionPressed);
+                net.AddFitness((1f - Vector3.Distance(transform.position,hex.position)));//fitness based on how distant pac is from objectives
+                
             }
         }
-        
     }
 
     private void OnDrawGizmos()

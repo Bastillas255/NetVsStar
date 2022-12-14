@@ -362,10 +362,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boomerPrefab: {fileID: 1078310815301990, guid: 15dfbda4486d1734d9f1848c595a5645, type: 3}
   hex: {fileID: 443517834}
-  populationSize: 2
+  populationSize: 50
+  generationNumber: 0
   pacPrefab: {fileID: 2215815800667927638, guid: 477061bd1a3092e43a71886c3cb6cbba, type: 3}
   spawnSpot: {fileID: 239556108}
-  pacTest: 1
+  pacTest: 0
 --- !u!4 &771722870
 Transform:
   m_ObjectHideFlags: 0

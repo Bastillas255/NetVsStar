@@ -10,8 +10,9 @@ public class Manager : MonoBehaviour
     private bool isTraning = false;
     [SerializeField][Tooltip("population size MUST be even, else it will be set as 20 (og value:50)")]
     private int populationSize = 50;
+    [SerializeField]
     private int generationNumber = 0;
-    private int[] layers = new int[] { 1, 10, 10, 2 }; //originally 1 input and 1 output, now is 1 input 2 outputs
+    private int[] layers = new int[] { 1, 10, 10, 1 }; //originally 1 input and 1 output, now is 1 input 2 outputs
     private List<NeuralNetwork> nets;
     private bool leftMouseDown = false;
     private List<Boomerang> boomerangList = null;
@@ -121,7 +122,7 @@ public class Manager : MonoBehaviour
 
         for (int i = 0; i < populationSize; i++)
         {
-            PacManMovement pac = ((GameObject)Instantiate(pacPrefab, new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 0), boomerPrefab.transform.rotation)).GetComponent<PacManMovement>();
+            PacManMovement pac = ((GameObject)Instantiate(pacPrefab, new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 0), pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
             pac.Init(nets[i], hex.transform);
             pacList.Add(pac);
         }
