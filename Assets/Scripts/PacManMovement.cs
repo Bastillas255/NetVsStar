@@ -28,6 +28,7 @@ public class PacManMovement : MonoBehaviour
     private NeuralNetwork net;
     private bool initilized = false;
     private Transform hex; //transform where pac man get rewarded for pointing/closing in
+    private Material mat;
 
 
 
@@ -38,10 +39,12 @@ public class PacManMovement : MonoBehaviour
         grid=GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
         rb = GetComponent<Rigidbody>();
         isMoving = false;
+        mat = GetComponent<Renderer>().material;
+
 
         //alling itself to grid
-        pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
-        transform.position = pacmanNode.worldPosition;//and center to it
+        //pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
+        //transform.position = pacmanNode.worldPosition;//and center to it
     }
 
 
@@ -49,6 +52,10 @@ public class PacManMovement : MonoBehaviour
     {
         if (initilized==true)
         {
+            float distance = Vector2.Distance(transform.position, hex.position);
+            if (distance > 20f)
+                distance = 20f;
+            mat.color = new Color(distance / 20f, (1f - (distance / 20f)), (1f - (distance / 20f)));
             if (isHumanControlled)
             {
                 directionPressed.x = Input.GetAxisRaw("Horizontal");
@@ -83,9 +90,35 @@ public class PacManMovement : MonoBehaviour
                 
 
                 float[] inputs = new float[2];
-                inputs[0] = hex.position.x;
-                inputs[1] = hex.position.y;
-                float[] output = net.FeedForward(inputs);//the information coming back from the NN
+                //inputs[0] = Vector3.Distance(transform.position, hex.position);
+                //if (hex.position.x > transform.position.x)
+                //{
+                //    inputs[0] = 1;
+                //}
+                //else
+                //{
+                //    inputs[0] = -1;
+                //}
+                //if (hex.position.y > transform.position.y)
+                //{
+                //    inputs[1] =  1;
+                //}
+                //else
+                //{
+                //    inputs[1] = -1;
+                //}
+
+                inputs[0] = Mathf.Sign(hex.position.x- transform.position.x);
+                inputs[1] = Mathf.Sign(hex.position.y - transform.position.y);
+
+
+
+
+
+
+                //It should be what does it needs to get to the hexagon, not the transform, in other words 
+                //what the NN should press to get to hex
+                float[] output = net.FeedForward(inputs);//the information coming back from the NN, 
 
                 //Debug.Log(output[0] + "," + output[1]); //so output 0 is left & right, 1 is up and down
 
@@ -107,7 +140,7 @@ public class PacManMovement : MonoBehaviour
 
 
                 //Debug.Log(directionPressed);
-                net.AddFitness((1f - Vector3.Distance(transform.position,hex.position)));//fitness based on how distant pac is from objectives
+                net.AddFitness((1000-Vector3.Distance(transform.position,hex.position)));//fitness based on how distant pac is from objectives
                 
             }
         }

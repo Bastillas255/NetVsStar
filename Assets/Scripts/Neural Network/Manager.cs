@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Manager : MonoBehaviour
 {
@@ -11,18 +12,44 @@ public class Manager : MonoBehaviour
     [SerializeField][Tooltip("population size MUST be even, else it will be set as 20 (og value:50)")]
     private int populationSize = 50;
     [SerializeField]
+    [Tooltip("how much time for individuals life, default is 15f")]
+    private float genLifespan;
     private int generationNumber = 0;
-    private int[] layers = new int[] { 1, 10, 10, 1 }; //originally 1 input and 1 output, now is 1 input 2 outputs
+    private int[] layers = new int[] { 1, 10, 10, 1 }; //1 input and 1 output for boomerangs/ 2 input 2 outputs for Pac
     private List<NeuralNetwork> nets;
     private bool leftMouseDown = false;
     private List<Boomerang> boomerangList = null;
+
+
     //pac stuff
     public GameObject pacPrefab;
     [SerializeField]
+    private bool useSpawnSpot;
+    [SerializeField]
     private Transform spawnSpot;
-    private List<PacManMovement> pacList = null;
     [SerializeField]
     private bool pacTest;
+    private List<PacManMovement> pacList = null;
+    Vector3 spawnSpotVector;
+
+
+    //text stuff
+    public GameObject genTextObject;
+    private TextMeshProUGUI genText;
+    public GameObject timeTextObject;
+    private TextMeshProUGUI timeText;
+    
+
+    private void Start()
+    {
+        genText = genTextObject.GetComponent<TextMeshProUGUI>();
+        timeText = timeTextObject.GetComponent<TextMeshProUGUI>();
+
+        if (pacTest)
+        {
+            layers = new int[] { 2, 10, 10, 2 };
+        }
+    }
 
     void Timer()
     {
@@ -34,6 +61,7 @@ public class Manager : MonoBehaviour
     {
         if (isTraning == false)
         {
+            
             if (generationNumber == 0)
             {
                 InitBoomerangNeuralNetworks();
@@ -56,17 +84,19 @@ public class Manager : MonoBehaviour
                 }
             }
 
-
+            
             generationNumber++;
+            genText.text = "Gen: " + generationNumber;
 
             isTraning = true;
-            Invoke("Timer", 15f);
+            Invoke("Timer", genLifespan);
             if (pacTest==true)
                 CreatePacBodies();
             else
                 CreateBoomerangBodies();
         }
-
+        
+        timeText.text = "Time: "+(int)(Time.fixedUnscaledTime / 3600) % 60 + ":"+ (int)(Time.fixedUnscaledTime/60)%60 + ":"+ (int)Time.fixedUnscaledTime%60;
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -122,7 +152,16 @@ public class Manager : MonoBehaviour
 
         for (int i = 0; i < populationSize; i++)
         {
-            PacManMovement pac = ((GameObject)Instantiate(pacPrefab, new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 0), pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
+            if (useSpawnSpot)
+            {
+                spawnSpotVector = spawnSpot.transform.position;
+            }
+            else
+            {
+                spawnSpotVector = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 0);
+            }
+            PacManMovement pac = ((GameObject)Instantiate(pacPrefab, spawnSpotVector, pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
+            
             pac.Init(nets[i], hex.transform);
             pacList.Add(pac);
         }
