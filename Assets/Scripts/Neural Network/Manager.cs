@@ -19,7 +19,7 @@ public class Manager : MonoBehaviour
     private List<NeuralNetwork> nets;
     private bool leftMouseDown = false;
     private List<Boomerang> boomerangList = null;
-    private int maxFit = 0; //Almacena el mayor fitness que se ha tenido de todas las redes neuronales
+    private float maxFit = 0; //Almacena el mayor fitness que se ha tenido de todas las redes neuronales
 
 
     //pac stuff
