@@ -19,6 +19,7 @@ public class Manager : MonoBehaviour
     private List<NeuralNetwork> nets;
     private bool leftMouseDown = false;
     private List<Boomerang> boomerangList = null;
+    [SerializeField]
     private float maxFit = 0; //Almacena el mayor fitness que se ha tenido de todas las redes neuronales
 
 
@@ -71,7 +72,7 @@ public class Manager : MonoBehaviour
             else
             {
                 nets.Sort(); //Se ordena según parámetros definidos en NeuralNetwork CompareTo
-                maxFit = nets[0].GetFitness(); //Obtiene el fitness de la red neuronal con mejor desempeño
+                maxFit = nets[populationSize-1].GetFitness(); //Obtiene el fitness de la red neuronal con mejor desempeño
                 for (int i = 0; i < populationSize / 2; i++)
                 {
                     nets[i] = new NeuralNetwork(nets[i + (populationSize / 2)]); //Crea nuevas redes y reemplaza la mitad que ha tenido peor desempeño

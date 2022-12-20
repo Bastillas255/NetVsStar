@@ -111,6 +111,9 @@ public class PacManMovement : MonoBehaviour
                 inputs[0] = Mathf.Sign(hex.position.x- transform.position.x);
                 inputs[1] = Mathf.Sign(hex.position.y - transform.position.y);
 
+                //inputs[0] = hex.position.x - transform.position.x;
+                //inputs[1] = hex.position.y - transform.position.y;
+
 
 
 
@@ -139,8 +142,8 @@ public class PacManMovement : MonoBehaviour
                 rb.MovePosition(new Vector3(transform.position.x + ( directionPressed.x), transform.position.y + ( directionPressed.y), transform.position.z));
 
 
-                //Debug.Log(directionPressed);
-                net.AddFitness((1000-Vector3.Distance(transform.position,hex.position)));//fitness based on how distant pac is from objectives
+                
+                net.AddFitness((1f-Vector3.Distance(transform.position,hex.position)));//fitness based on how distant pac is from objectives
                 
             }
         }
