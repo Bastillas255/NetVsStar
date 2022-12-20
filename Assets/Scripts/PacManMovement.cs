@@ -87,52 +87,14 @@ public class PacManMovement : MonoBehaviour
             }
             else
             {
-                
-
                 float[] inputs = new float[2];
-                //inputs[0] = Vector3.Distance(transform.position, hex.position);
-                //if (hex.position.x > transform.position.x)
-                //{
-                //    inputs[0] = 1;
-                //}
-                //else
-                //{
-                //    inputs[0] = -1;
-                //}
-                //if (hex.position.y > transform.position.y)
-                //{
-                //    inputs[1] =  1;
-                //}
-                //else
-                //{
-                //    inputs[1] = -1;
-                //}
 
-                inputs[0] = Mathf.Sign(hex.position.x- transform.position.x);
-                inputs[1] = Mathf.Sign(hex.position.y - transform.position.y);
-
-                //inputs[0] = hex.position.x - transform.position.x;
-                //inputs[1] = hex.position.y - transform.position.y;
-
-
-
-
-
-
-                //It should be what does it needs to get to the hexagon, not the transform, in other words 
-                //what the NN should press to get to hex
+                //where the NN should go to get close to hex
+                inputs[0] = hex.position.x - transform.position.x;
+                inputs[1] = hex.position.y - transform.position.y;
+             
                 float[] output = net.FeedForward(inputs);//the information coming back from the NN, 
 
-                //Debug.Log(output[0] + "," + output[1]); //so output 0 is left & right, 1 is up and down
-
-                //if (output[0] * output[0] < output[1] * output[1]) //which has more magnitude? output 0 or 1? 
-                //{
-                //    directionPressed.x = output[0];
-                //}
-                //else
-                //{
-                //    directionPressed.y = output[1]; 
-                //}
                 directionPressed.x = output[0];
                 directionPressed.y = output[1];
 
