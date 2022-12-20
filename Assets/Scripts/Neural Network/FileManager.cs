@@ -24,7 +24,7 @@ public class FileManager : MonoBehaviour
         if(!File.Exists(path))
         {
             //OJO, esta función reemplaza todo el archivo
-            File.WriteAllText(path, "Turno JugadorX JugadorY EnemigoX EnemigoY RecompensasRestantes DistJE DistJR DistER ParedesJE ParedesJR ParedesER\n\n");
+            File.WriteAllText(path, "Turno Comportamiento JugadorX JugadorY EnemigoX EnemigoY RecompensasRestantes DistJE DistJR DistER ParedesJE ParedesJR ParedesER\n\n");
         }
     }
 

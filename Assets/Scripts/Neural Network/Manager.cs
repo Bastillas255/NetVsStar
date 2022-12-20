@@ -19,6 +19,7 @@ public class Manager : MonoBehaviour
     private List<NeuralNetwork> nets;
     private bool leftMouseDown = false;
     private List<Boomerang> boomerangList = null;
+    private int maxFit = 0; //Almacena el mayor fitness que se ha tenido de todas las redes neuronales
 
 
     //pac stuff
@@ -47,7 +48,7 @@ public class Manager : MonoBehaviour
 
         if (pacTest)
         {
-            layers = new int[] { 2, 10, 10, 2 };
+            layers = new int[] { 2, 10, 10, 2 }; //Capas de neuronas
         }
     }
 
@@ -69,10 +70,11 @@ public class Manager : MonoBehaviour
             }
             else
             {
-                nets.Sort();
+                nets.Sort(); //Se ordena según parámetros definidos en NeuralNetwork CompareTo
+                maxFit = nets[0].GetFitness(); //Obtiene el fitness de la red neuronal con mejor desempeño
                 for (int i = 0; i < populationSize / 2; i++)
                 {
-                    nets[i] = new NeuralNetwork(nets[i + (populationSize / 2)]);
+                    nets[i] = new NeuralNetwork(nets[i + (populationSize / 2)]); //Crea nuevas redes y reemplaza la mitad que ha tenido peor desempeño
                     nets[i].Mutate();
 
                     nets[i + (populationSize / 2)] = new NeuralNetwork(nets[i + (populationSize / 2)]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
@@ -80,7 +82,7 @@ public class Manager : MonoBehaviour
 
                 for (int i = 0; i < populationSize; i++)
                 {
-                    nets[i].SetFitness(0f);
+                    nets[i].SetFitness(0f); //Reinicia el fitness de todas las redes neuronales
                 }
             }
 
