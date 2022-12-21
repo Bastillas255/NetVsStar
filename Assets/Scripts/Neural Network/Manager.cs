@@ -21,7 +21,8 @@ public class Manager : MonoBehaviour
     private List<Boomerang> boomerangList = null;
     [SerializeField]
     private float maxFit = 0; //Almacena el mayor fitness que se ha tenido de todas las redes neuronales
-
+    [SerializeField]
+    private float avgFit = 0;
 
     //pac stuff
     public GameObject pacPrefab;
@@ -48,7 +49,7 @@ public class Manager : MonoBehaviour
         timeText = timeTextObject.GetComponent<TextMeshProUGUI>();
 
         if (pacTest)
-        {
+        {                      //2, 10, 10, 2
             layers = new int[] { 2, 10, 10, 2 }; //Capas de neuronas
         }
     }
@@ -71,13 +72,20 @@ public class Manager : MonoBehaviour
             }
             else
             {
+                avgFit = 0;
                 nets.Sort(); //Se ordena según parámetros definidos en NeuralNetwork CompareTo
-                maxFit = nets[populationSize-1].GetFitness(); //Obtiene el fitness de la red neuronal con mejor desempeño
+                maxFit = nets[populationSize - 1].GetFitness(); //Obtiene el fitness de la red neuronal con mejor desempeño
+                for(int i = 0; i < populationSize; i++)
+                {
+                    avgFit += nets[i].GetFitness();
+                }
+                avgFit = avgFit / populationSize;
                 for (int i = 0; i < populationSize / 2; i++)
                 {
-                    nets[i] = new NeuralNetwork(nets[i + (populationSize / 2)]); //Crea nuevas redes y reemplaza la mitad que ha tenido peor desempeño
+                    //nets[i] = new NeuralNetwork(nets[i + (populationSize / 2)]); //"Respalda" las redes con mejor desempeño en la mitad de peor desempeño
+                    nets[i] = nets[i + (populationSize / 2)];
                     nets[i].Mutate();
-
+                    //Reinicia la mitad ya respaldada de redes neuronales
                     nets[i + (populationSize / 2)] = new NeuralNetwork(nets[i + (populationSize / 2)]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
                 }
 
