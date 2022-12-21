@@ -173,7 +173,7 @@ public class Manager : MonoBehaviour
             }
             PacManMovement pac = ((GameObject)Instantiate(pacPrefab, spawnSpotVector, pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
             
-            pac.Init(nets[i], hex.transform);
+            pac.Init(nets[i], hex.transform);//wich number should be here?
             pacList.Add(pac);
         }
 

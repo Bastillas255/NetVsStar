@@ -24,18 +24,19 @@ public class PacManMovement : MonoBehaviour
     int rewardsCount=11;
     int turnCount = 0;
 
-    //NN stuff (boomerang copies)
+    //NN stuff
     private NeuralNetwork net;
     private bool initilized = false;
     private Transform hex; //transform where pac man get rewarded for pointing/closing in
     private Material mat;
 
+    private int currentReward; //should we go one by one? wouldn't be better to have all the rewards positions on inputs? fitness calculate on most close one
+
 
 
     void Start()
     {
-        //initialize
-        //grid = GetComponentInParent<StarGrid>(); //need to change this
+        //Initialize
         grid=GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
         rb = GetComponent<Rigidbody>();
         isMoving = false;
@@ -87,26 +88,55 @@ public class PacManMovement : MonoBehaviour
             }
             else
             {
-                float[] inputs = new float[2];
+                //rewards(multiple hexagons) and finish door
 
-                //where the NN should go to get close to hex
-                inputs[0] = hex.position.x - transform.position.x;
-                inputs[1] = hex.position.y - transform.position.y;
-             
-                float[] output = net.FeedForward(inputs);//the information coming back from the NN, 
+                //turn movement
 
-                directionPressed.x = output[0];
-                directionPressed.y = output[1];
+                //A* per net 
 
-                //targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
-                //allignCheck = grid.NodeFromWorldPoint(targetPosition);
-                //targetPosition = allignCheck.worldPosition;
-                rb.MovePosition(new Vector3(transform.position.x + ( directionPressed.x), transform.position.y + ( directionPressed.y), transform.position.z));
+                if (!isMoving)
+                {
+                    isMoving = true;
+
+                    float[] inputs = new float[2];
+
+                    //Where the NN should go to get close to hex
+                    inputs[0] = hex.position.x - transform.position.x;
+                    inputs[1] = hex.position.y - transform.position.y;
+
+                    float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
+
+                    //this outpus are the movement magnitudes the net calculates
+                    directionPressed.x = output[0];
+                    directionPressed.y = output[1];
 
 
-                
-                net.AddFitness((1f-Vector3.Distance(transform.position,hex.position)));//fitness based on how distant pac is from objectives
-                
+                    //but our movement is only ortgonal so we have to choose to move on x or y
+                    if (Mathf.Abs(directionPressed.x) > Mathf.Abs(directionPressed.y))//which direction has more magnitude
+                    {
+                        directionPressed.x = Mathf.Sign(output[0]);
+                    }
+                    else
+                    {
+                        directionPressed.y = Mathf.Sign(output[1]);
+                    }
+                    //now we know where we are going we need to move in tiles
+                    targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
+                    allignCheck = grid.NodeFromWorldPoint(targetPosition);
+                    targetPosition = allignCheck.worldPosition;
+                    StartCoroutine("TileMovement");
+
+
+
+                    //targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
+                    //allignCheck = grid.NodeFromWorldPoint(targetPosition);
+                    //targetPosition = allignCheck.worldPosition;
+                    rb.MovePosition(new Vector3(transform.position.x + (directionPressed.x), transform.position.y + (directionPressed.y), transform.position.z));
+
+
+
+                    net.AddFitness((1f - Vector3.Distance(transform.position, hex.position)));//fitness based on how distant pac is from objectives
+                }
             }
         }
     }
