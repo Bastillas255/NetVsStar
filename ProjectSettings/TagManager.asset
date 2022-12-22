@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Consumable
   - Grid
+  - Door
   layers:
   - Default
   - TransparentFX

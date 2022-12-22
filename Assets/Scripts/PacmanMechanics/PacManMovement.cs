@@ -21,8 +21,10 @@ public class PacManMovement : MonoBehaviour
     float lerpDuration = 1;
 
     //modules
-    int rewardsCount=11;
+    int rewardsCount = 11;
     int turnCount = 0;
+    ClosestPath cPath;
+    Vector3 closestReward;
 
     //NN stuff
     private NeuralNetwork net;
@@ -30,18 +32,48 @@ public class PacManMovement : MonoBehaviour
     private Transform hex; //transform where pac man get rewarded for pointing/closing in
     private Material mat;
 
-    private int currentReward; //should we go one by one? wouldn't be better to have all the rewards positions on inputs? fitness calculate on most close one
+
+    //Rewards Stuff
+    private Vector3[] keySpots;//KS has been filled, how to know which one has been visit?
+    //we can make a star grid call? if we are one the same spot of one of the rewards? go through the list if movement has finish
+    [SerializeField]
+    private int rewardNumber;
+    float minDistance;
+    public float fitness;
+    private Vector3 door;
+
+
 
 
 
     void Start()
     {
+        //we need the keySpots vectors numbers, but alligned to grid
+        keySpots = new Vector3[11] 
+           {new Vector3(0,-7,0), 
+            new Vector3(6,9,0), 
+            new Vector3(-4,17,0), 
+            new Vector3(-12,5,0), 
+            new Vector3(-12,-5,0), 
+            new Vector3(-28,5,0), 
+            new Vector3(-20,5,0), 
+            new Vector3(-20,15,0), 
+            new Vector3(-30,-1,0), 
+            new Vector3(-32,11,0), 
+            new Vector3(0,3,0)};
+
+        door = new Vector3(11, 11, 0);
         //Initialize
-        grid=GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
+        grid =GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
         rb = GetComponent<Rigidbody>();
+        cPath = GetComponent<ClosestPath>();
         isMoving = false;
         mat = GetComponent<Renderer>().material;
+        rewardNumber = 0;
 
+
+        
+        //put all rewards into keySpots
 
         //alling itself to grid
         //pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
@@ -51,12 +83,14 @@ public class PacManMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+
         if (initilized==true)
         {
-            float distance = Vector2.Distance(transform.position, hex.position);
-            if (distance > 20f)
-                distance = 20f;
-            mat.color = new Color(distance / 20f, (1f - (distance / 20f)), (1f - (distance / 20f)));
+            fitness = net.GetFitness();
+            //CreateRewards();
+            if (fitness > 20f)
+                fitness = 20f;
+            mat.color = new Color(fitness/20, 1-(fitness/20), 1-(fitness/20));
             if (isHumanControlled)
             {
                 directionPressed.x = Input.GetAxisRaw("Horizontal");
@@ -88,21 +122,38 @@ public class PacManMovement : MonoBehaviour
             }
             else
             {
-                //rewards(multiple hexagons) and finish door
-
-                //turn movement
+                //some things could be better like find a way to a* to find closest reward,also fix bugs of going out of bounds
+                //also the color of fitness
+                //finish door
 
                 //A* per net 
 
                 if (!isMoving)
                 {
+                    for (int i = 0; i < keySpots.Length; i++)
+                    {
+                        float distanceToKey = Vector3.Distance(transform.position, keySpots[i]);
+                        if (distanceToKey < minDistance)
+                        {
+                            minDistance = distanceToKey;
+                            closestReward = keySpots[i];
+                        }
+                    }
+
+                    if (rewardNumber == 11)
+                    {
+                        closestReward = door;
+                    }
                     isMoving = true;
 
                     float[] inputs = new float[2];
 
-                    //Where the NN should go to get close to hex
-                    inputs[0] = hex.position.x - transform.position.x;
-                    inputs[1] = hex.position.y - transform.position.y;
+                    //closestReward= cPath.SearchPaths(); //this is handled on the previous "for"
+
+                    //NN needs to get close to ClosestReward
+
+                    inputs[0] = closestReward.x - transform.position.x;
+                    inputs[1] = closestReward.y - transform.position.y;
 
                     float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
 
@@ -121,11 +172,28 @@ public class PacManMovement : MonoBehaviour
                         directionPressed.y = Mathf.Sign(output[1]);
                     }
                     //now we know where we are going we need to move in tiles
+
+                    //we also need to check if that tile is walkable and if that tile is a keySpot
+
                     targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
                     allignCheck = grid.NodeFromWorldPoint(targetPosition);
                     targetPosition = allignCheck.worldPosition;
+                    for (int i = 0; i < keySpots.Length; i++)
+                    {
+                        if (targetPosition ==keySpots[i])
+                        {
+                            Debug.Log("keySpot Collected At; "+ keySpots[i]);
+                            rewardNumber++;
+                            net.AddFitness(100f);//fitness based on how distant pac is from objectives
+                            //erase from vector would be a better solution
+                            if (i != keySpots.Length - 1)
+                                keySpots[i] = keySpots[i + 1];
+                            else
+                                keySpots[i] = keySpots[i - 1];
+                        }
+                    }
+                    
                     StartCoroutine("TileMovement");
-
 
 
                     //targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
@@ -133,13 +201,34 @@ public class PacManMovement : MonoBehaviour
                     //targetPosition = allignCheck.worldPosition;
                     rb.MovePosition(new Vector3(transform.position.x + (directionPressed.x), transform.position.y + (directionPressed.y), transform.position.z));
 
-
-
                     net.AddFitness((1f - Vector3.Distance(transform.position, hex.position)));//fitness based on how distant pac is from objectives
                 }
             }
         }
     }
+
+    //we created the rewards on intitialization of pacman bodies
+
+    //needs a fix, instead of rewards this should be a list of positions, once a position is reached is also cleaned off the list
+
+    //private void CreateRewards()
+    //{
+    //    if (rewardList != null)
+    //    {
+    //        for (int i = 0; i < rewardList.Count; i++)
+    //        {
+    //            GameObject.Destroy(rewardList[i].gameObject);
+    //        }
+    //    }
+
+    //    rewardList = new List<GameObject>();
+
+    //    for (int i = 0; i < rewardNumber; i++)
+    //    {
+    //        GameObject reward = ((GameObject)Instantiate(rewardPrefab, rewardSpawns[i].position, rewardPrefab.transform.rotation));
+    //        rewardList.Add(reward);
+    //    }
+    //}
 
     private void OnDrawGizmos()
     {
@@ -158,6 +247,17 @@ public class PacManMovement : MonoBehaviour
         {
             Destroy(other.gameObject);
             rewardsCount--;
+            net.AddFitness(100f);//fitness based on how distant pac is from objectives
+            //Debug.Log("RewardsLeft = " + rewardsCount);
+        }
+
+        if (other.CompareTag("Door"))
+        {
+            if (rewardNumber==11)
+            {
+                net.AddFitness(1000f);//fitness based on how distant pac is from objectives
+                Time.timeScale = 0;
+            }
             //Debug.Log("RewardsLeft = " + rewardsCount);
         }
     }

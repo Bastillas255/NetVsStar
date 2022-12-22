@@ -47,7 +47,7 @@ public class Manager : MonoBehaviour
     {
         genText = genTextObject.GetComponent<TextMeshProUGUI>();
         timeText = timeTextObject.GetComponent<TextMeshProUGUI>();
-
+        
         if (pacTest)
         {                      //2, 10, 10, 2
             layers = new int[] { 2, 10, 10, 2 }; //Capas de neuronas
@@ -101,8 +101,9 @@ public class Manager : MonoBehaviour
 
             isTraning = true;
             Invoke("Timer", genLifespan);
-            if (pacTest==true)
+            if (pacTest == true) { 
                 CreatePacBodies();
+            }
             else
                 CreateBoomerangBodies();
         }
@@ -178,7 +179,6 @@ public class Manager : MonoBehaviour
         }
 
     }
-
 
 
     void InitBoomerangNeuralNetworks()
