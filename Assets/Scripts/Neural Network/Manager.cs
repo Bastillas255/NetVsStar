@@ -35,13 +35,21 @@ public class Manager : MonoBehaviour
     private List<PacManMovement> pacList = null;
     Vector3 spawnSpotVector;
 
-
     //text stuff
     public GameObject genTextObject;
     private TextMeshProUGUI genText;
     public GameObject timeTextObject;
     private TextMeshProUGUI timeText;
-    
+
+    //average fitness
+    public GameObject avgFitnessObject;
+    private TextMeshProUGUI avgFitness;
+    //best fitness
+    public GameObject bestFitnessObject;
+    private TextMeshProUGUI bestFitness;
+    //timer
+    public GameObject timerTextObject;
+    private TextMeshProUGUI timerText;
 
     private void Start()
     {
@@ -50,7 +58,7 @@ public class Manager : MonoBehaviour
         
         if (pacTest)
         {                      //2, 10, 10, 2
-            layers = new int[] { 2, 10, 10, 2 }; //Capas de neuronas
+            layers = new int[] { 13, 10, 10, 2 }; //Capas de neuronas //2 is x&y values of closest reward, then two are for enemy x&y + 9 of wall view
         }
     }
 
@@ -58,7 +66,6 @@ public class Manager : MonoBehaviour
     {
         isTraning = false;
     }
-
 
     void Update()
     {
@@ -72,14 +79,19 @@ public class Manager : MonoBehaviour
             }
             else
             {
+
                 avgFit = 0;
                 nets.Sort(); //Se ordena según parámetros definidos en NeuralNetwork CompareTo
                 maxFit = nets[populationSize - 1].GetFitness(); //Obtiene el fitness de la red neuronal con mejor desempeño
-                for(int i = 0; i < populationSize; i++)
+                bestFitness.text = "Best Fit.: "+ maxFit;
+
+                for (int i = 0; i < populationSize; i++)
                 {
                     avgFit += nets[i].GetFitness();
                 }
                 avgFit = avgFit / populationSize;
+                avgFitness.text = "Avg.Fit.: " + (int)avgFit;
+
                 for (int i = 0; i < populationSize / 2; i++)
                 {
                     //nets[i] = new NeuralNetwork(nets[i + (populationSize / 2)]); //"Respalda" las redes con mejor desempeño en la mitad de peor desempeño

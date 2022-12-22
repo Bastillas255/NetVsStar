@@ -27,7 +27,7 @@ public class PacManMovement : MonoBehaviour
     Vector3 closestReward;
 
     //NN stuff
-    private NeuralNetwork net;
+    public NeuralNetwork net;
     private bool initilized = false;
     private Transform hex; //transform where pac man get rewarded for pointing/closing in
     private Material mat;
@@ -43,7 +43,7 @@ public class PacManMovement : MonoBehaviour
     private Vector3 door;
 
 
-
+    float[] inputs = new float[13];
 
 
     void Start()
@@ -70,9 +70,21 @@ public class PacManMovement : MonoBehaviour
         isMoving = false;
         mat = GetComponent<Renderer>().material;
         rewardNumber = 0;
+        int aux = 4;
+        pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
 
+        foreach (StarNode n in grid.GetNeighboursWithDiagonals(pacmanNode))
+        {
+            inputs[aux] = (n.walkable) ? 0 : 1; //walkable put a 0 on inputs
+            aux++;
+ 
+            if (grid.playerNode == n)
+            {
+                inputs[2]= grid.playerNode.worldPosition.x;
+                inputs[3] = grid.playerNode.worldPosition.y;
+            }
+        }
 
-        
         //put all rewards into keySpots
 
         //alling itself to grid
@@ -124,7 +136,8 @@ public class PacManMovement : MonoBehaviour
             {
                 //some things could be better like find a way to a* to find closest reward,also fix bugs of going out of bounds
                 //also the color of fitness
-                //finish door
+                
+                //wall vision
 
                 //A* per net 
 
@@ -146,7 +159,7 @@ public class PacManMovement : MonoBehaviour
                     }
                     isMoving = true;
 
-                    float[] inputs = new float[2];
+                    //float[] inputs = new float[280];
 
                     //closestReward= cPath.SearchPaths(); //this is handled on the previous "for"
 
@@ -160,17 +173,21 @@ public class PacManMovement : MonoBehaviour
                     //this outpus are the movement magnitudes the net calculates
                     directionPressed.x = output[0];
                     directionPressed.y = output[1];
-
+                    
 
                     //but our movement is only ortgonal so we have to choose to move on x or y
                     if (Mathf.Abs(directionPressed.x) > Mathf.Abs(directionPressed.y))//which direction has more magnitude
                     {
                         directionPressed.x = Mathf.Sign(output[0]);
+                        directionPressed.y = 0;
                     }
                     else
                     {
                         directionPressed.y = Mathf.Sign(output[1]);
+                        directionPressed.x = 0;
                     }
+                    //Debug.Log(this.gameObject + " / " + directionPressed);
+
                     //now we know where we are going we need to move in tiles
 
                     //we also need to check if that tile is walkable and if that tile is a keySpot
@@ -182,7 +199,7 @@ public class PacManMovement : MonoBehaviour
                     {
                         if (targetPosition ==keySpots[i])
                         {
-                            Debug.Log("keySpot Collected At; "+ keySpots[i]);
+                            //Debug.Log("keySpot Collected At; "+ keySpots[i]);
                             rewardNumber++;
                             net.AddFitness(100f);//fitness based on how distant pac is from objectives
                             //erase from vector would be a better solution
@@ -199,7 +216,7 @@ public class PacManMovement : MonoBehaviour
                     //targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
                     //allignCheck = grid.NodeFromWorldPoint(targetPosition);
                     //targetPosition = allignCheck.worldPosition;
-                    rb.MovePosition(new Vector3(transform.position.x + (directionPressed.x), transform.position.y + (directionPressed.y), transform.position.z));
+                    //rb.MovePosition(new Vector3(transform.position.x + (directionPressed.x), transform.position.y + (directionPressed.y), transform.position.z));
 
                     net.AddFitness((1f - Vector3.Distance(transform.position, hex.position)));//fitness based on how distant pac is from objectives
                 }
@@ -267,15 +284,19 @@ public class PacManMovement : MonoBehaviour
         //lerp
         if (allignCheck.walkable)
         {
-            float timeElapsed = 0;
-            while (timeElapsed < lerpDuration)
+            if (true)// is not a diagonal
             {
-                transform.position = Vector3.Lerp(transform.position, targetPosition, timeElapsed / lerpDuration);
-                timeElapsed += Time.deltaTime;
-                yield return null;
+                float timeElapsed = 0;
+                while (timeElapsed < lerpDuration)
+                {
+                    transform.position = Vector3.Lerp(transform.position, targetPosition, timeElapsed / lerpDuration);
+                    timeElapsed += Time.deltaTime;
+                    yield return null;
+                }
+                transform.position = targetPosition;
+                isMoving = false;
             }
-            transform.position = targetPosition;
-            isMoving = false;
+            
         }
         else
         {

@@ -11,7 +11,9 @@ public class StarGrid : MonoBehaviour
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
     public float nodeRadius;
-    StarNode[,] grid;
+    public StarNode[,] grid;
+
+    public StarNode playerNode;
 
     float nodeDiameter;
     int gridSizeX, gridSizeY;
@@ -89,6 +91,32 @@ public class StarGrid : MonoBehaviour
 
     }
 
+    public List<StarNode> GetNeighboursWithDiagonals(StarNode node)
+    {
+        List<StarNode> neighbours = new List<StarNode>();
+
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0)
+                {
+                    continue;
+                }
+
+                int checkX = node.gridX + x;
+                int checkY = node.gridY + y;
+
+                if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
+                {
+                    neighbours.Add(grid[checkX, checkY]);
+                }
+            }
+        }
+        return neighbours;
+
+    }
+
     public List<StarNode> path;
 
     private void OnDrawGizmos()
@@ -109,7 +137,7 @@ public class StarGrid : MonoBehaviour
         {
             if (grid != null && displayGridGizmos)
             {
-                StarNode playerNode = NodeFromWorldPoint(player.position); //"player" on this context is a*
+                playerNode = NodeFromWorldPoint(player.position); //"player" on this context is a*
                 Debug.Log("Enemy (X,Y) = " + playerNode.worldPosition);
                 foreach (StarNode n in grid)
                 {

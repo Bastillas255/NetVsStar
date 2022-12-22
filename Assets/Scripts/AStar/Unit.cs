@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
-    public Transform target;
+    Transform target;
     public bool isPacmanMoving;
     float speed = 1.55f;
     Vector3[] path;
@@ -18,13 +18,19 @@ public class Unit : MonoBehaviour
 
     private void Update()
     {
-        //Unit only request path if target has moved
-        if (target.position!=formerLoopPosition)
+        if (target != null)
         {
-            PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
-            
+            //Unit only request path if target has moved
+            if (target.position != formerLoopPosition)
+            {
+                PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
+            }
+            formerLoopPosition = target.position;
         }
-        formerLoopPosition=target.position;
+        else if (GameObject.FindGameObjectWithTag("Player").transform != null)
+        {
+            target = GameObject.FindGameObjectWithTag("Player").transform;
+        }
     }
 
     public void OnPathFound(Vector3[] newPath, bool pathSuccessful)
@@ -39,7 +45,7 @@ public class Unit : MonoBehaviour
 
     IEnumerator FollowPath()
     {
-        Debug.Log("DistJE = " + path.Length);
+        //Debug.Log("DistJE = " + path.Length);
         Vector3 currentWaypoint = path[0];
         while (true)
         {
@@ -54,6 +60,13 @@ public class Unit : MonoBehaviour
             }
             transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, speed * Time.deltaTime);
             yield return null;
+        }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            other.GetComponent<PacManMovement>().net.AddFitness(-1000f);
         }
     }
 

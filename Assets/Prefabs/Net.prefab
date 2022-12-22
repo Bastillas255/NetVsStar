@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 4076121194688242791}
   m_Layer: 0
   m_Name: Net
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -131,6 +131,7 @@ MonoBehaviour:
   isMoving: 0
   isHumanControlled: 0
   rewardNumber: 0
+  fitness: 0
 --- !u!114 &4076121194688242791
 MonoBehaviour:
   m_ObjectHideFlags: 0
