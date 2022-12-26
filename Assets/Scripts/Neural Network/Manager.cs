@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System.Diagnostics;
 using System.IO;
 
 public class Manager : MonoBehaviour
@@ -31,27 +32,31 @@ public class Manager : MonoBehaviour
     //pac stuff
     public GameObject pacPrefab;
     [SerializeField]
-    private bool useSpawnSpot;
-    [SerializeField]
     private Transform spawnSpot;
     [SerializeField]
     private bool pacTest;
     private List<PacManMovement> pacList = null;
     Vector3 spawnSpotVector;
 
+    //ghost
+    public GameObject ghostPrefab;
+    [SerializeField]
+    private Transform ghostSpawn;
+    private List<Unit> ghostList = null;
+
     //text stuff
     public GameObject genTextObject;
     private TextMeshProUGUI genText;
+
     public GameObject timeTextObject;
     private TextMeshProUGUI timeText;
 
-    //average fitness
     public GameObject avgFitnessObject;
     private TextMeshProUGUI avgFitness;
-    //best fitness
+
     public GameObject bestFitnessObject;
     private TextMeshProUGUI bestFitness;
-    //timer
+    
     public GameObject timerTextObject;
     private TextMeshProUGUI timerText;
 
@@ -59,8 +64,12 @@ public class Manager : MonoBehaviour
     {
         genText = genTextObject.GetComponent<TextMeshProUGUI>();
         timeText = timeTextObject.GetComponent<TextMeshProUGUI>();
+        avgFitness = avgFitnessObject.GetComponent<TextMeshProUGUI>();
+        bestFitness = bestFitnessObject.GetComponent<TextMeshProUGUI>();
+        timerText = timerTextObject.GetComponent<TextMeshProUGUI>();
         fm = new FileManager();
         
+
         if (pacTest)
         {                      //2, 10, 10, 2
             layers = new int[] { 13, 10, 10, 2 }; //Capas de neuronas //2 is x&y values of closest reward, then two are for enemy x&y + 9 of wall view
@@ -85,9 +94,11 @@ public class Manager : MonoBehaviour
             else
             {
 
+
+                avgFit = 0;
                 nets.Sort(); //Se ordena según parámetros definidos en NeuralNetwork CompareTo
                 maxFit = nets[populationSize - 1].GetFitness(); //Obtiene el fitness de la red neuronal con mejor desempeño
-                bestFitness.text = "Best Fit.: "+ maxFit;
+                bestFitness.text = "Best Fit.: "+ (int)maxFit;
 
                 for (int i = 0; i < populationSize; i++)
                 {
@@ -117,8 +128,14 @@ public class Manager : MonoBehaviour
 
             isTraning = true;
             Invoke("Timer", genLifespan);
+
+            //float timer = genLifespan;
+            //timer -= Time.deltaTime;
+            //timerText.text = "Timer: "+ timer;
+
             if (pacTest == true) { 
                 CreatePacBodies();
+                CreateGhostBodies();
             }
             else
                 CreateBoomerangBodies();
@@ -195,18 +212,34 @@ public class Manager : MonoBehaviour
 
         for (int i = 0; i < populationSize; i++)
         {
-            if (useSpawnSpot)
-            {
-                spawnSpotVector = spawnSpot.transform.position;
-            }
-            else
-            {
-                spawnSpotVector = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 0);
-            }
-            PacManMovement pac = ((GameObject)Instantiate(pacPrefab, spawnSpotVector, pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
+            
+            PacManMovement pac = ((GameObject)Instantiate(pacPrefab, spawnSpot.transform.position, pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
             
             pac.Init(nets[i], hex.transform);//wich number should be here?
             pacList.Add(pac);
+        }
+
+    }
+
+    private void CreateGhostBodies()
+    {
+        if (ghostList != null)
+        {
+            for (int i = 0; i < ghostList.Count; i++)
+            {
+                GameObject.Destroy(ghostList[i].gameObject);
+            }
+
+        }
+
+        ghostList = new List<Unit>();
+
+        for (int i = 0; i < populationSize; i++) //targets.Length was populationSize
+        {
+            Unit ghost = ((GameObject)Instantiate(ghostPrefab, ghostSpawn.transform.position, ghostPrefab.transform.rotation)).GetComponent<Unit>();
+
+            ghost.Chase(pacList[i].gameObject.transform);//we should give the corresponding pac transform
+            ghostList.Add(ghost);
         }
 
     }
@@ -230,4 +263,27 @@ public class Manager : MonoBehaviour
             nets.Add(net);
         }
     }
+
+    //we created the rewards on intitialization of pacman bodies
+
+    //needs a fix, instead of rewards this should be a list of positions, once a position is reached is also cleaned off the list
+
+    //private void CreateRewards()
+    //{
+    //    if (rewardList != null)
+    //    {
+    //        for (int i = 0; i < rewardList.Count; i++)
+    //        {
+    //            GameObject.Destroy(rewardList[i].gameObject);
+    //        }
+    //    }
+
+    //    rewardList = new List<GameObject>();
+
+    //    for (int i = 0; i < rewardNumber; i++)
+    //    {
+    //        GameObject reward = ((GameObject)Instantiate(rewardPrefab, rewardSpawns[i].position, rewardPrefab.transform.rotation));
+    //        rewardList.Add(reward);
+    //    }
+    //}
 }

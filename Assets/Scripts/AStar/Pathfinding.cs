@@ -26,6 +26,7 @@ public class Pathfinding : MonoBehaviour
 		//Stopwatch sw = new Stopwatch();
 		//sw.Start();
 
+
 		Vector3[] waypoints = new Vector3[0];
 		bool pathSuccess = false;
 

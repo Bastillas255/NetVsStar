@@ -119,44 +119,44 @@ public class StarGrid : MonoBehaviour
 
     public List<StarNode> path;
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawWireCube(transform.position,new Vector3(gridWorldSize.x, gridWorldSize.y,1));
-        if (onlyDisplayPathGizmos)
-        {
-            if (path != null)
-            {
-                foreach (StarNode n in path)
-                {
-                    Gizmos.color = Color.black;
-                    Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
-                }
-            }
-        }
-        else
-        {
-            if (grid != null && displayGridGizmos)
-            {
-                playerNode = NodeFromWorldPoint(player.position); //"player" on this context is a*
-                Debug.Log("Enemy (X,Y) = " + playerNode.worldPosition);
-                foreach (StarNode n in grid)
-                {
-                    Gizmos.color = (n.walkable) ? Color.white : Color.red;
-                    if (path != null)
-                    {
-                        if (path.Contains(n))
-                        {
-                            Gizmos.color = Color.black;
-                        }
-                    }
-                    if (playerNode == n)
-                    {
-                        Gizmos.color = Color.cyan;
-                    }
-                    Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
-                }
-            }
-        }
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.DrawWireCube(transform.position,new Vector3(gridWorldSize.x, gridWorldSize.y,1));
+    //    if (onlyDisplayPathGizmos)
+    //    {
+    //        if (path != null)
+    //        {
+    //            foreach (StarNode n in path)
+    //            {
+    //                Gizmos.color = Color.black;
+    //                Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
+    //            }
+    //        }
+    //    }
+    //    else
+    //    {
+    //        if (grid != null && displayGridGizmos)
+    //        {
+    //            playerNode = NodeFromWorldPoint(player.position); //"player" on this context is a*
+    //            Debug.Log("Enemy (X,Y) = " + playerNode.worldPosition);
+    //            foreach (StarNode n in grid)
+    //            {
+    //                Gizmos.color = (n.walkable) ? Color.white : Color.red;
+    //                if (path != null)
+    //                {
+    //                    if (path.Contains(n))
+    //                    {
+    //                        Gizmos.color = Color.black;
+    //                    }
+    //                }
+    //                if (playerNode == n)
+    //                {
+    //                    Gizmos.color = Color.cyan;
+    //                }
+    //                Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
+    //            }
+    //        }
+    //    }
 
-    }
+    //}
 }

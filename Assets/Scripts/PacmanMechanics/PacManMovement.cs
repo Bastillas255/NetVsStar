@@ -4,26 +4,23 @@ using UnityEngine;
 
 public class PacManMovement : MonoBehaviour
 {
+    [HideInInspector]
     public bool isReady;
+    [HideInInspector]
     public bool isMoving;
-    public bool isHumanControlled;
+    public bool isHuman;
 
-    Rigidbody rb;
     Vector2 directionPressed;
-    //need to import StarGrid, take the neigbours list, and move to the neighbour in the pressed direction
 
-    //need to get grid object on scene and then extract starGrid.cs
+    //Grid stuff
     private StarGrid grid;
-    int distanceToMove;
     StarNode pacmanNode;
     StarNode allignCheck;
     Vector3 targetPosition;
     float lerpDuration = 1;
 
     //modules
-    int rewardsCount = 11;
     int turnCount = 0;
-    ClosestPath cPath;
     Vector3 closestReward;
 
     //NN stuff
@@ -34,20 +31,31 @@ public class PacManMovement : MonoBehaviour
 
 
     //Rewards Stuff
-    private Vector3[] keySpots;//KS has been filled, how to know which one has been visit?
-    //we can make a star grid call? if we are one the same spot of one of the rewards? go through the list if movement has finish
+    private Vector3[] keySpots;
     [SerializeField]
     private int rewardNumber;
     float minDistance;
     public float fitness;
     private Vector3 door;
-
+    int aux = 4;
 
     float[] inputs = new float[13];
 
+    GameObject[] keySpotAuxiliar;
 
     void Start()
     {
+        if (isHuman)
+        {
+            //keySpots should be taken for rewards on the map
+            keySpotAuxiliar= GameObject.FindGameObjectsWithTag("Consumable");
+            keySpots = new Vector3[keySpotAuxiliar.Length];
+            for (int i = 0; i < keySpotAuxiliar.Length; i++)
+            {
+                keySpots[i] = keySpotAuxiliar[i].transform.position;
+            }
+
+        }else
         //we need the keySpots vectors numbers, but alligned to grid
         keySpots = new Vector3[11] 
            {new Vector3(0,-7,0), 
@@ -65,31 +73,48 @@ public class PacManMovement : MonoBehaviour
         door = new Vector3(11, 11, 0);
         //Initialize
         grid =GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
-        rb = GetComponent<Rigidbody>();
-        cPath = GetComponent<ClosestPath>();
         isMoving = false;
         mat = GetComponent<Renderer>().material;
         rewardNumber = 0;
-        int aux = 4;
+        
         pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
 
-        foreach (StarNode n in grid.GetNeighboursWithDiagonals(pacmanNode))
+        //alling itself to grid
+        pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
+        transform.position = pacmanNode.worldPosition;//and center to it
+    }
+
+    private void Update()
+    {
+        if (isHuman)
         {
-            inputs[aux] = (n.walkable) ? 0 : 1; //walkable put a 0 on inputs
-            aux++;
- 
-            if (grid.playerNode == n)
+            directionPressed.x = Input.GetAxisRaw("Horizontal");
+            directionPressed.y = Input.GetAxisRaw("Vertical");
+            Debug.Log(directionPressed);
+            if (directionPressed.magnitude != 0)
             {
-                inputs[2]= grid.playerNode.worldPosition.x;
-                inputs[3] = grid.playerNode.worldPosition.y;
+                //pacman needs to move in grid diameter distances; next line is an example
+                //Debug.DrawLine(transform.position, new Vector3(transform.position.x+ ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius*2)* directionPressed.y), transform.position.z), Color.magenta);
+
+                //doesn't take into account collisions
+                //rb.MovePosition(new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z));
+                //rb.AddForce(new Vector3(((grid.nodeRadius * 2) * directionPressed.x), ((grid.nodeRadius * 2) * directionPressed.y), 0));
+                if (!isMoving)
+                {
+                    isMoving = true;
+                    //modules
+                    //Debug.Log("Player (X,Y) = " + pacmanNode.worldPosition);
+                    turnCount++;
+                    //Debug.Log("Turn = " + turnCount);
+
+                    //move to the next tile
+                    targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
+                    allignCheck = grid.NodeFromWorldPoint(targetPosition);
+                    targetPosition = allignCheck.worldPosition;
+                    StartCoroutine("TileMovement");
+                }
             }
         }
-
-        //put all rewards into keySpots
-
-        //alling itself to grid
-        //pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
-        //transform.position = pacmanNode.worldPosition;//and center to it
     }
 
 
@@ -103,149 +128,107 @@ public class PacManMovement : MonoBehaviour
             if (fitness > 20f)
                 fitness = 20f;
             mat.color = new Color(fitness/20, 1-(fitness/20), 1-(fitness/20));
-            if (isHumanControlled)
-            {
-                directionPressed.x = Input.GetAxisRaw("Horizontal");
-                directionPressed.y = Input.GetAxisRaw("Vertical");
-                //Debug.Log(directionPressed);
-                if (directionPressed.magnitude != 0)
-                {
-                    //pacman needs to move in grid diameter distances; next line is an example
-                    //Debug.DrawLine(transform.position, new Vector3(transform.position.x+ ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius*2)* directionPressed.y), transform.position.z), Color.magenta);
-
-                    //doesn't take into account collisions
-                    //rb.MovePosition(new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z));
-                    //rb.AddForce(new Vector3(((grid.nodeRadius * 2) * directionPressed.x), ((grid.nodeRadius * 2) * directionPressed.y), 0));
-                    if (!isMoving)
-                    {
-                        isMoving = true;
-                        //modules
-                        //Debug.Log("Player (X,Y) = " + pacmanNode.worldPosition);
-                        turnCount++;
-                        //Debug.Log("Turn = " + turnCount);
-
-                        //move to the next tile
-                        targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
-                        allignCheck = grid.NodeFromWorldPoint(targetPosition);
-                        targetPosition = allignCheck.worldPosition;
-                        StartCoroutine("TileMovement");
-                    }
-                }
-            }
-            else
-            {
-                //some things could be better like find a way to a* to find closest reward,also fix bugs of going out of bounds
-                //also the color of fitness
+            //some things could be better like find a way to a* to find closest reward,also fix bugs of going out of bounds
+            //also the color of fitness
                 
-                //wall vision
+            //wall vision
 
-                //A* per net 
+            //A* per net 
 
-                if (!isMoving)
+            if (!isMoving)
+            {
+                foreach (StarNode n in grid.GetNeighboursWithDiagonals(pacmanNode))
                 {
-                    for (int i = 0; i < keySpots.Length; i++)
+                    inputs[aux] = (n.walkable) ? 0 : 1; //walkable put a 0 on inputs
+                    aux++;
+
+                    if (grid.playerNode == n)
                     {
-                        float distanceToKey = Vector3.Distance(transform.position, keySpots[i]);
-                        if (distanceToKey < minDistance)
-                        {
-                            minDistance = distanceToKey;
-                            closestReward = keySpots[i];
-                        }
+                        inputs[2] = grid.playerNode.worldPosition.x;
+                        inputs[3] = grid.playerNode.worldPosition.y;
                     }
-
-                    if (rewardNumber == 11)
-                    {
-                        closestReward = door;
-                    }
-                    isMoving = true;
-
-                    //float[] inputs = new float[280];
-
-                    //closestReward= cPath.SearchPaths(); //this is handled on the previous "for"
-
-                    //NN needs to get close to ClosestReward
-
-                    inputs[0] = closestReward.x - transform.position.x;
-                    inputs[1] = closestReward.y - transform.position.y;
-
-                    float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
-
-                    //this outpus are the movement magnitudes the net calculates
-                    directionPressed.x = output[0];
-                    directionPressed.y = output[1];
-                    
-
-                    //but our movement is only ortgonal so we have to choose to move on x or y
-                    if (Mathf.Abs(directionPressed.x) > Mathf.Abs(directionPressed.y))//which direction has more magnitude
-                    {
-                        directionPressed.x = Mathf.Sign(output[0]);
-                        directionPressed.y = 0;
-                    }
-                    else
-                    {
-                        directionPressed.y = Mathf.Sign(output[1]);
-                        directionPressed.x = 0;
-                    }
-                    //Debug.Log(this.gameObject + " / " + directionPressed);
-
-                    //now we know where we are going we need to move in tiles
-
-                    //we also need to check if that tile is walkable and if that tile is a keySpot
-
-                    targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
-                    allignCheck = grid.NodeFromWorldPoint(targetPosition);
-                    targetPosition = allignCheck.worldPosition;
-                    for (int i = 0; i < keySpots.Length; i++)
-                    {
-                        if (targetPosition ==keySpots[i])
-                        {
-                            //Debug.Log("keySpot Collected At; "+ keySpots[i]);
-                            rewardNumber++;
-                            net.AddFitness(100f);//fitness based on how distant pac is from objectives
-                            //erase from vector would be a better solution
-                            if (i != keySpots.Length - 1)
-                                keySpots[i] = keySpots[i + 1];
-                            else
-                                keySpots[i] = keySpots[i - 1];
-                        }
-                    }
-                    
-                    StartCoroutine("TileMovement");
-
-
-                    //targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
-                    //allignCheck = grid.NodeFromWorldPoint(targetPosition);
-                    //targetPosition = allignCheck.worldPosition;
-                    //rb.MovePosition(new Vector3(transform.position.x + (directionPressed.x), transform.position.y + (directionPressed.y), transform.position.z));
-
-                    net.AddFitness((1f - Vector3.Distance(transform.position, hex.position)));//fitness based on how distant pac is from objectives
                 }
+
+                for (int i = 0; i < keySpots.Length; i++)
+                {
+                    float distanceToKey = Vector3.Distance(transform.position, keySpots[i]);
+                    if (distanceToKey < minDistance)
+                    {
+                        minDistance = distanceToKey;
+                        closestReward = keySpots[i];
+                    }
+                }
+
+                if (rewardNumber == 11)
+                {
+                    closestReward = door;
+                }
+                isMoving = true;
+
+                //float[] inputs = new float[280];
+
+                //closestReward= cPath.SearchPaths(); //this is handled on the previous "for"
+
+                //NN needs to get close to ClosestReward
+
+                inputs[0] = closestReward.x - transform.position.x;
+                inputs[1] = closestReward.y - transform.position.y;
+
+                float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
+
+                //this outpus are the movement magnitudes the net calculates
+                directionPressed.x = output[0];
+                directionPressed.y = output[1];
+                    
+
+                //but our movement is only ortgonal so we have to choose to move on x or y
+                if (Mathf.Abs(directionPressed.x) > Mathf.Abs(directionPressed.y))//which direction has more magnitude
+                {
+                    directionPressed.x = Mathf.Sign(output[0]);
+                    directionPressed.y = 0;
+                }
+                else
+                {
+                    directionPressed.y = Mathf.Sign(output[1]);
+                    directionPressed.x = 0;
+                }
+                //Debug.Log(this.gameObject + " / " + directionPressed);
+
+                //now we know where we are going we need to move in tiles
+
+                //we also need to check if that tile is walkable and if that tile is a keySpot
+
+                targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
+                allignCheck = grid.NodeFromWorldPoint(targetPosition);
+                targetPosition = allignCheck.worldPosition;
+                for (int i = 0; i < keySpots.Length; i++)
+                {
+                    if (targetPosition ==keySpots[i])
+                    {
+                        //Debug.Log("keySpot Collected At; "+ keySpots[i]);
+                        rewardNumber++;
+                        net.AddFitness(100f);//fitness based on how distant pac is from objectives
+                        //erase from vector would be a better solution
+                        if (i != keySpots.Length - 1)
+                            keySpots[i] = keySpots[i + 1];
+                        else
+                            keySpots[i] = keySpots[i - 1];
+                    }
+                }
+                    
+                StartCoroutine("TileMovement");
+
+
+                //targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
+                //allignCheck = grid.NodeFromWorldPoint(targetPosition);
+                //targetPosition = allignCheck.worldPosition;
+                //rb.MovePosition(new Vector3(transform.position.x + (directionPressed.x), transform.position.y + (directionPressed.y), transform.position.z));
+
+                net.AddFitness((1f - Vector3.Distance(transform.position, hex.position)));//fitness based on how distant pac is from objectives
             }
+            
         }
     }
-
-    //we created the rewards on intitialization of pacman bodies
-
-    //needs a fix, instead of rewards this should be a list of positions, once a position is reached is also cleaned off the list
-
-    //private void CreateRewards()
-    //{
-    //    if (rewardList != null)
-    //    {
-    //        for (int i = 0; i < rewardList.Count; i++)
-    //        {
-    //            GameObject.Destroy(rewardList[i].gameObject);
-    //        }
-    //    }
-
-    //    rewardList = new List<GameObject>();
-
-    //    for (int i = 0; i < rewardNumber; i++)
-    //    {
-    //        GameObject reward = ((GameObject)Instantiate(rewardPrefab, rewardSpawns[i].position, rewardPrefab.transform.rotation));
-    //        rewardList.Add(reward);
-    //    }
-    //}
 
     private void OnDrawGizmos()
     {
@@ -262,9 +245,13 @@ public class PacManMovement : MonoBehaviour
     {
         if (other.CompareTag("Consumable"))
         {
+            rewardNumber++;
+            if (!isHuman)
+            {
+                net.AddFitness(100f);//fitness based on how distant pac is from objectives
+            }
+            
             Destroy(other.gameObject);
-            rewardsCount--;
-            net.AddFitness(100f);//fitness based on how distant pac is from objectives
             //Debug.Log("RewardsLeft = " + rewardsCount);
         }
 
@@ -272,8 +259,13 @@ public class PacManMovement : MonoBehaviour
         {
             if (rewardNumber==11)
             {
-                net.AddFitness(1000f);//fitness based on how distant pac is from objectives
-                Time.timeScale = 0;
+                if (!isHuman)
+                {
+                    net.AddFitness(1000f);//fitness based on how distant pac is from objectives
+                }
+                
+                Debug.Log("Game Over");
+                Time.timeScale = 0;//game finish at this point
             }
             //Debug.Log("RewardsLeft = " + rewardsCount);
         }

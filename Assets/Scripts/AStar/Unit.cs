@@ -6,14 +6,16 @@ public class Unit : MonoBehaviour
 {
     Transform target;
     public bool isPacmanMoving;
-    float speed = 1.55f;
+    float speed = 10f; //1.55f og
     Vector3[] path;
     int targetIndex;
     Vector3 formerLoopPosition;
 
-    private void Start()
+
+    public void Chase(Transform pacman)
     {
-        formerLoopPosition = Vector3.zero;
+        target = pacman;
+        //formerLoopPosition = Vector3.zero;
     }
 
     private void Update()
@@ -21,15 +23,11 @@ public class Unit : MonoBehaviour
         if (target != null)
         {
             //Unit only request path if target has moved
-            if (target.position != formerLoopPosition)
-            {
+            //if (target.position != formerLoopPosition)
+            //{
                 PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
-            }
-            formerLoopPosition = target.position;
-        }
-        else if (GameObject.FindGameObjectWithTag("Player").transform != null)
-        {
-            target = GameObject.FindGameObjectWithTag("Player").transform;
+            //}
+            //formerLoopPosition = target.position;
         }
     }
 
