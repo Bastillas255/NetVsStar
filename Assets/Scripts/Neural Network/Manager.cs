@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System.IO;
 
 public class Manager : MonoBehaviour
 {
@@ -23,6 +24,9 @@ public class Manager : MonoBehaviour
     private float maxFit = 0; //Almacena el mayor fitness que se ha tenido de todas las redes neuronales
     [SerializeField]
     private float avgFit = 0;
+    private SaveData save;
+    private NeuralNetwork savedNN;
+    private FileManager fm;
 
     //pac stuff
     public GameObject pacPrefab;
@@ -55,6 +59,7 @@ public class Manager : MonoBehaviour
     {
         genText = genTextObject.GetComponent<TextMeshProUGUI>();
         timeText = timeTextObject.GetComponent<TextMeshProUGUI>();
+        fm = new FileManager();
         
         if (pacTest)
         {                      //2, 10, 10, 2
@@ -80,7 +85,6 @@ public class Manager : MonoBehaviour
             else
             {
 
-                avgFit = 0;
                 nets.Sort(); //Se ordena según parámetros definidos en NeuralNetwork CompareTo
                 maxFit = nets[populationSize - 1].GetFitness(); //Obtiene el fitness de la red neuronal con mejor desempeño
                 bestFitness.text = "Best Fit.: "+ maxFit;
@@ -136,6 +140,21 @@ public class Manager : MonoBehaviour
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             hex.transform.position = mousePosition;
         }
+
+        if(Input.GetKeyDown(KeyCode.S))
+        {
+            nets.Sort();
+            DataSaver ds = new DataSaver(nets[populationSize-1].GetLayers(), nets[populationSize-1].GetNeurons(), nets[populationSize-1].GetWeights());
+            save = ds.SaveNN();
+            fm.WriteToFile("NNTrainingData.txt", save.ToJson());
+
+            //SaveByJson(nets[populationSize-1]);
+        }
+        if(Input.GetKeyDown(KeyCode.L))
+        {
+            //LoadByJson();
+        }
+
     }
 
 

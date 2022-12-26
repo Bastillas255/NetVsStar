@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
-public class FileManager : MonoBehaviour
+public class FileManager// : MonoBehaviour
 {
 
     //Ruta que tendrá el archivo dentro del proyecto
@@ -14,9 +14,9 @@ public class FileManager : MonoBehaviour
     string weightsSavePath;
 
     ///<summary>
-    ///Crea el archivo, comprueba si es que existe tal archivo, de  no existir lo crea
+    ///Crea el archivo de traza, comprueba si es que existe tal archivo, de  no existir lo crea
     ///</summary>
-    public void CreateText()
+    public void CreateTraceText()
     {
         path = Application.dataPath + "/Traza.txt";
         
@@ -28,22 +28,28 @@ public class FileManager : MonoBehaviour
         }
     }
 
+    public void WriteToFile(string fileName, string data)
+    {
+        path = Application.dataPath + "/" + fileName;
+        File.WriteAllText(path, data);
+    }
+
     ///<summary>
-    ///Añade texto al archivo, comprueba primero si existe
+    ///Añade texto al archivo de traza, comprueba primero si existe
     ///</summary>
     ///<param name="content">String con contenido que se añadirá al archivo de texto</param>
-    public void AddText(string content)
+    public void AddTraceText(string content)
     {
         if(!File.Exists(path))
         {
-            CreateText();
+            CreateTraceText();
         }
         File.AppendAllText(path, content+"\n"); //Esta función agrega contenido al archivo de texto, adicionalmente se agrega un salto de línea
     }
     // Start is called before the first frame update
     void Start()
     {
-        CreateText();
+        //CreateText();
     }
 
     ///<summmary>

@@ -55,12 +55,11 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     ///<param name="copyNeurons">Array 2D de neuronas o variable "neurons"</param>
     ///<param name="copyWeights">Array 3D de pesos o variable "weights"</param>
     ///<param name="copyFitness">Valor de Fitness</param>
-    public NeuralNetwork(int[] copyLayers, float[][] copyNeurons, float[][][] copyWeights, float copyFitness)
+    public NeuralNetwork(int[] copyLayers, float[][] copyNeurons, float[][][] copyWeights)
     {
         CopyLayers(copyLayers);
         CopyNeurons(copyNeurons);
         CopyWeights(copyWeights);
-        SetFitness(copyFitness);
     }
 
     private void CopyWeights(float[][][] copyWeights)
