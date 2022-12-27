@@ -43,8 +43,10 @@ public class DataSaver// : MonoBehaviour
     //Arreglos 2D con largos variables
     private void flatten2DArray(float[][] neuronsMatrix)
     {
+        //Obtiene el largo del array unidimensional sumando todos los largos de la matriz
         int array1DLength = neuronsMatrix.Sum(subArray => subArray.Length);
 
+        //Inicializa su respectivo array y un índice para llenarlo
         flatNeurons = new float[array1DLength];
         int flatIndex = 0;
 
@@ -52,6 +54,7 @@ public class DataSaver// : MonoBehaviour
         {
             for(int j = 0; j < neuronsMatrix[i].Length; j++)
             {
+                //Llena el array unidimensional con los datos de la matriz
                 flatNeurons[flatIndex] = neuronsMatrix[i][j];
                 flatIndex++;
             }
@@ -62,8 +65,10 @@ public class DataSaver// : MonoBehaviour
     //Arreglos 3D con largos variables
     private void flatten3DArray(float[][][] weigthsMatrix)
     {
+        //Obtiene el largo del array unidimensional sumando los largos que existan en las tres dimensiones de la matriz
         int array1DLength = weigthsMatrix.Sum(innerArray => innerArray.Sum(evenInnerArray => evenInnerArray.Length));
 
+        //Inicializa su correspondiente array unidimensional y su índice
         flatWeigths = new float[array1DLength];
         int flatIndex = 0;
 
@@ -73,6 +78,7 @@ public class DataSaver// : MonoBehaviour
             {
                 for(int k = 0; k < weigthsMatrix[i][j].Length; k++)
                 {
+                    //Llena el array con los datos de la matriz tridimensional
                     flatWeigths[flatIndex] = weigthsMatrix[i][j][k];
                     flatIndex++;
                 }

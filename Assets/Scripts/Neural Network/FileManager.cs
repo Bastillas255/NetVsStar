@@ -46,6 +46,25 @@ public class FileManager// : MonoBehaviour
         }
         File.AppendAllText(path, content+"\n"); //Esta función agrega contenido al archivo de texto, adicionalmente se agrega un salto de línea
     }
+
+    public string ReadFile(string fileName)
+    {
+        string filePath = Application.dataPath + "/" + fileName;
+        if(File.Exists(filePath))
+        {
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                string contenido = reader.ReadToEnd();
+                return contenido;
+            }
+        }
+        else
+        {
+            Debug.Log("File not found");
+            return "";
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {

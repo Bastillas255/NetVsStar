@@ -169,6 +169,13 @@ public class Manager : MonoBehaviour
         }
         if(Input.GetKeyDown(KeyCode.L))
         {
+
+            DataLoader dl = new DataLoader(fm.ReadFile("NNTrainingData.txt"));
+
+            //SaveData sd = new SaveData();
+            DataSaver ds = new DataSaver(dl.GetLayers(), dl.GetNeurons(), dl.GetWeigths());
+            SaveData testSave = ds.SaveNN();
+            fm.WriteToFile("NNTEST.txt", testSave.ToJson());
             //LoadByJson();
         }
 
