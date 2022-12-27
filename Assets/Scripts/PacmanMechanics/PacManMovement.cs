@@ -20,8 +20,8 @@ public class PacManMovement : MonoBehaviour
     float lerpDuration = 1;
 
     //modules
-    int turnCount = 0;
-    Vector3 closestReward;
+    public int turnCount = 0;
+    public Vector3 closestReward;
 
     //NN stuff
     public NeuralNetwork net;
@@ -32,8 +32,7 @@ public class PacManMovement : MonoBehaviour
 
     //Rewards Stuff
     private Vector3[] keySpots;
-    [SerializeField]
-    private int rewardNumber;
+    public int rewardNumber;
     float minDistance;
     public float fitness;
     private Vector3 door;
@@ -90,7 +89,7 @@ public class PacManMovement : MonoBehaviour
         {
             directionPressed.x = Input.GetAxisRaw("Horizontal");
             directionPressed.y = Input.GetAxisRaw("Vertical");
-            Debug.Log(directionPressed);
+            //Debug.Log(directionPressed);
             if (directionPressed.magnitude != 0)
             {
                 //pacman needs to move in grid diameter distances; next line is an example
@@ -124,19 +123,13 @@ public class PacManMovement : MonoBehaviour
         if (initilized==true)
         {
             fitness = net.GetFitness();
-            //CreateRewards();
             if (fitness > 20f)
                 fitness = 20f;
             mat.color = new Color(fitness/20, 1-(fitness/20), 1-(fitness/20));
-            //some things could be better like find a way to a* to find closest reward,also fix bugs of going out of bounds
-            //also the color of fitness
-                
-            //wall vision
-
-            //A* per net 
 
             if (!isMoving)
             {
+                //wall vision
                 foreach (StarNode n in grid.GetNeighboursWithDiagonals(pacmanNode))
                 {
                     inputs[aux] = (n.walkable) ? 0 : 1; //walkable put a 0 on inputs
@@ -149,6 +142,8 @@ public class PacManMovement : MonoBehaviour
                     }
                 }
 
+                //inprove this, atleast on Human control
+                //some things could be better like find a way to a* to find closest reward
                 for (int i = 0; i < keySpots.Length; i++)
                 {
                     float distanceToKey = Vector3.Distance(transform.position, keySpots[i]);
@@ -164,8 +159,6 @@ public class PacManMovement : MonoBehaviour
                     closestReward = door;
                 }
                 isMoving = true;
-
-                //float[] inputs = new float[280];
 
                 //closestReward= cPath.SearchPaths(); //this is handled on the previous "for"
 

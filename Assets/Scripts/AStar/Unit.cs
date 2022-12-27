@@ -7,7 +7,7 @@ public class Unit : MonoBehaviour
     Transform target;
     public bool isPacmanMoving;
     float speed = 10f; //1.55f og
-    Vector3[] path;
+    public Vector3[] path;
     int targetIndex;
     Vector3 formerLoopPosition;
 
@@ -43,7 +43,8 @@ public class Unit : MonoBehaviour
 
     IEnumerator FollowPath()
     {
-        //Debug.Log("DistJE = " + path.Length);
+        //Debug.Log("Adversario = " + transform.position);
+        //Debug.Log("Distancia J-A = " + path.Length);
         Vector3 currentWaypoint = path[0];
         while (true)
         {
