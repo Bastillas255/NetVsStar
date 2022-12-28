@@ -5,12 +5,27 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     Transform target;
-    public bool isPacmanMoving;
-    float speed = 10f; //1.55f og
+    PacManMovement pac;
     public Vector3[] path;
     int targetIndex;
-    Vector3 formerLoopPosition;
+    int lastTurn;
+    public bool displayPathGizmos;
+    float lerpDuration = 1;
 
+    private void Start()
+    {
+        target = GameObject.FindGameObjectWithTag("Player").transform;
+        pac=target.GetComponent<PacManMovement>();
+        lastTurn = 0;
+
+        //tracking modules
+        PathRequestManager.RequestPath(transform.position, target.position, doNothing);//move one position closer
+    }
+
+    void doNothing(Vector3[] newPath, bool pathSuccessful)
+    {
+
+    }
 
     public void Chase(Transform pacman)
     {
@@ -20,14 +35,10 @@ public class Unit : MonoBehaviour
 
     private void Update()
     {
-        if (target != null)
+        if (pac.turnCount!=lastTurn)//if turn has changed
         {
-            //Unit only request path if target has moved
-            //if (target.position != formerLoopPosition)
-            //{
-                PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
-            //}
-            //formerLoopPosition = target.position;
+            PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);//move one position closer
+            lastTurn = pac.turnCount;
         }
     }
 
@@ -36,57 +47,59 @@ public class Unit : MonoBehaviour
         if (pathSuccessful)
         {
             path = newPath;
-            StopCoroutine("FollowPath");
-            StartCoroutine("FollowPath");
+            StartCoroutine("TileMovement");
         }
     }
 
-    IEnumerator FollowPath()
-    {
-        //Debug.Log("Adversario = " + transform.position);
-        //Debug.Log("Distancia J-A = " + path.Length);
-        Vector3 currentWaypoint = path[0];
-        while (true)
-        {
-            if (transform.position==currentWaypoint)
-            {
-                targetIndex++;
-                if (targetIndex >= path.Length)
-                {
-                    yield break;
-                }
-                currentWaypoint = path[targetIndex];
-            }
-            transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, speed * Time.deltaTime);
-            yield return null;
-        }
-    }
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            other.GetComponent<PacManMovement>().net.AddFitness(-1000f);
+            Debug.Log("Game Over: Ghost touch");
+            Time.timeScale = 0;//game finish at this point
+            //other.GetComponent<PacManMovement>().net.AddFitness(-1000f);
         }
     }
 
     public void OnDrawGizmos()
     {
-        if (path!=null)
+        if (displayPathGizmos)
         {
-            for (int i = targetIndex; i < path.Length; i++)
+            if (path != null)
             {
-                Gizmos.color = Color.black;
-                Gizmos.DrawCube(path[i], Vector3.one);
 
-                if (i == targetIndex)
+                for (int i = targetIndex; i < path.Length; i++)
                 {
-                    Gizmos.DrawLine(transform.position, path[i]);
-                }
-                else
-                {
-                    Gizmos.DrawLine(path[i - 1], path[i]);
+                    Gizmos.color = Color.black;
+                    Gizmos.DrawCube(path[i], Vector3.one);
+
+                    if (i == targetIndex)
+                    {
+                        Gizmos.DrawLine(transform.position, path[i]);
+                    }
+                    else
+                    {
+                        Gizmos.DrawLine(path[i - 1], path[i]);
+                    }
                 }
             }
+        }
+        
+    }
+
+    private IEnumerator TileMovement()
+    {
+        //lerp
+        if (true)// is not a diagonal
+        {
+            float timeElapsed = 0;
+            while (timeElapsed < lerpDuration)
+            {
+                transform.position = Vector3.Lerp(transform.position, path[0], timeElapsed / lerpDuration);
+                timeElapsed += Time.deltaTime;
+                yield return null;
+            }
+            transform.position = path[0];
         }
     }
 }

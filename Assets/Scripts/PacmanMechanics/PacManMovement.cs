@@ -33,10 +33,11 @@ public class PacManMovement : MonoBehaviour
     //Rewards Stuff
     private Vector3[] keySpots;
     public int rewardNumber;
-    float minDistance;
+    float minDistance= 1000f;
     public float fitness;
     private Vector3 door;
     int aux = 4;
+    public Vector3[] path;
 
     float[] inputs = new float[13];
 
@@ -44,30 +45,13 @@ public class PacManMovement : MonoBehaviour
 
     void Start()
     {
-        if (isHuman)
+        //keySpots should be taken for rewards on the map
+        keySpotAuxiliar= GameObject.FindGameObjectsWithTag("Consumable");
+        keySpots = new Vector3[keySpotAuxiliar.Length];
+        for (int i = 0; i < keySpotAuxiliar.Length; i++)
         {
-            //keySpots should be taken for rewards on the map
-            keySpotAuxiliar= GameObject.FindGameObjectsWithTag("Consumable");
-            keySpots = new Vector3[keySpotAuxiliar.Length];
-            for (int i = 0; i < keySpotAuxiliar.Length; i++)
-            {
-                keySpots[i] = keySpotAuxiliar[i].transform.position;
-            }
-
-        }else
-        //we need the keySpots vectors numbers, but alligned to grid
-        keySpots = new Vector3[11] 
-           {new Vector3(0,-7,0), 
-            new Vector3(6,9,0), 
-            new Vector3(-4,17,0), 
-            new Vector3(-12,5,0), 
-            new Vector3(-12,-5,0), 
-            new Vector3(-28,5,0), 
-            new Vector3(-20,5,0), 
-            new Vector3(-20,15,0), 
-            new Vector3(-30,-1,0), 
-            new Vector3(-32,11,0), 
-            new Vector3(0,3,0)};
+            keySpots[i] = keySpotAuxiliar[i].transform.position;
+        }
 
         door = new Vector3(11, 11, 0);
         //Initialize
@@ -76,11 +60,21 @@ public class PacManMovement : MonoBehaviour
         mat = GetComponent<Renderer>().material;
         rewardNumber = 0;
         
-        pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
-
         //alling itself to grid
         pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
         transform.position = pacmanNode.worldPosition;//and center to it
+
+        //tracking modules
+        for (int i = 0; i < keySpots.Length; i++)
+        {
+            float Distance = Vector3.Distance(transform.position, keySpots[i]);
+            if (Distance < minDistance)
+            {
+                minDistance = Distance;
+                closestReward = keySpots[i];
+            }
+        }
+        StartCoroutine("StartSearch", closestReward);
     }
 
     private void Update()
@@ -111,6 +105,16 @@ public class PacManMovement : MonoBehaviour
                     allignCheck = grid.NodeFromWorldPoint(targetPosition);
                     targetPosition = allignCheck.worldPosition;
                     StartCoroutine("TileMovement");
+
+                    
+                    
+                    //update closestReward for traceModules
+                    
+                   
+                    if (rewardNumber == 11)
+                    {
+                        closestReward = door;
+                    }
                 }
             }
         }
@@ -142,11 +146,12 @@ public class PacManMovement : MonoBehaviour
                     }
                 }
 
-                //inprove this, atleast on Human control
+                //improve this, atleast on Human control
                 //some things could be better like find a way to a* to find closest reward
                 for (int i = 0; i < keySpots.Length; i++)
                 {
-                    float distanceToKey = Vector3.Distance(transform.position, keySpots[i]);
+                    StartCoroutine("StartSearch", keySpots[i]);
+                    float distanceToKey = path.Length;
                     if (distanceToKey < minDistance)
                     {
                         minDistance = distanceToKey;
@@ -159,8 +164,6 @@ public class PacManMovement : MonoBehaviour
                     closestReward = door;
                 }
                 isMoving = true;
-
-                //closestReward= cPath.SearchPaths(); //this is handled on the previous "for"
 
                 //NN needs to get close to ClosestReward
 
@@ -185,7 +188,6 @@ public class PacManMovement : MonoBehaviour
                     directionPressed.y = Mathf.Sign(output[1]);
                     directionPressed.x = 0;
                 }
-                //Debug.Log(this.gameObject + " / " + directionPressed);
 
                 //now we know where we are going we need to move in tiles
 
@@ -198,7 +200,6 @@ public class PacManMovement : MonoBehaviour
                 {
                     if (targetPosition ==keySpots[i])
                     {
-                        //Debug.Log("keySpot Collected At; "+ keySpots[i]);
                         rewardNumber++;
                         net.AddFitness(100f);//fitness based on how distant pac is from objectives
                         //erase from vector would be a better solution
@@ -243,8 +244,17 @@ public class PacManMovement : MonoBehaviour
             {
                 net.AddFitness(100f);//fitness based on how distant pac is from objectives
             }
-            
+            //how to erase this horrid consumable from list
+
+            for (int i = 0; i < keySpots.Length; i++)
+            {
+                if (Vector3.Distance(keySpots[i], other.transform.position) < 1)
+                {
+                    keySpots[i] = Vector3.zero;
+                }
+            }
             Destroy(other.gameObject);
+           
             //Debug.Log("RewardsLeft = " + rewardsCount);
         }
 
@@ -280,6 +290,23 @@ public class PacManMovement : MonoBehaviour
                 }
                 transform.position = targetPosition;
                 isMoving = false;
+                //code to calculate closest reward
+                minDistance = 1000f;
+                for (int i = 0; i < keySpots.Length; i++)
+                {
+                    if (keySpots[i] != Vector3.zero)
+                    {
+                        float Distance = Vector3.Distance(transform.position, keySpots[i]);
+                        if (Distance < minDistance)
+                        {
+                            minDistance = Distance;
+                            closestReward = keySpots[i];
+                        }
+                    }
+                }
+
+                Debug.Log("Closest Reward; " + closestReward);
+                StartCoroutine("StartSearch", closestReward);
             }
             
         }
@@ -287,6 +314,19 @@ public class PacManMovement : MonoBehaviour
         {
             isMoving = false;
             yield break;
+        }
+    }
+    //search closest Path to Reward
+    private void StartSearch(Vector3 target)
+    {
+        PathRequestManager.RequestPath(transform.position, target, OnPathFound);
+    }
+
+    public void OnPathFound(Vector3[] newPath, bool pathSuccessful)
+    {
+        if (pathSuccessful)
+        {
+            path = newPath;
         }
     }
 
