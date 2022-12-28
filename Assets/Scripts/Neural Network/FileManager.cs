@@ -63,8 +63,8 @@ public class FileManager
         }
         else
         {
-            Debug.Log("File not found");
-            return "File not found";
+            List<string> empty = new List<string>();
+            return empty;
         }
     }
 }
