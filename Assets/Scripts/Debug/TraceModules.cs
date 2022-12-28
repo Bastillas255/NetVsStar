@@ -7,10 +7,13 @@ public class TraceModules : MonoBehaviour
     public GameObject pacObject;
     public GameObject ghostObject;
 
+    private int[] playerMovements;
+
     PacManMovement pacManMovement;
     Unit unit;
 
     FileManager fm;
+    SaveUserInput sui;
 
     int LastTurn=-1;
     public Vector3[] path;
@@ -22,7 +25,17 @@ public class TraceModules : MonoBehaviour
         pacManMovement = pacObject.GetComponent<PacManMovement>();
         unit = ghostObject.GetComponent<Unit>();
         trace = new SaveTraceData();
+        sui = new SaveUserInput();
         fm = new FileManager();
+        playerMovements = new int[4];
+    }
+
+    private void RestartPlayerMovements()
+    {
+        for(int i = 0; i < playerMovements.Length; i++)
+        {
+            playerMovements[i] = 0;
+        }
     }
 
     void LateUpdate()
@@ -63,6 +76,19 @@ public class TraceModules : MonoBehaviour
             fm.AddToFile("TraceData.txt", trace.ToJson());
 
             LastTurn = pacManMovement.turnCount;
+
+            RestartPlayerMovements();
+            if(Input.GetKeyDown(KeyCode.UpArrow)) playerMovements[0] = 1;
+            if(Input.GetKeyDown(KeyCode.DownArrow)) playerMovements[1] = 1;
+            if(Input.GetKeyDown(KeyCode.LeftArrow)) playerMovements[2] = 1;
+            if(Input.GetKeyDown(KeyCode.RightArrow)) playerMovements[3] = 1;
+
+            sui.up = playerMovements[0];
+            sui.down = playerMovements[1];
+            sui.left = playerMovements[2];
+            sui.right = playerMovements[3];
+
+            fm.AddToFile("UserInputs.txt", sui.ToJson());
         }
     }
 
