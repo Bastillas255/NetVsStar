@@ -10,35 +10,57 @@ public class TraceModules : MonoBehaviour
     PacManMovement pacManMovement;
     Unit unit;
 
+    FileManager fm;
+
     int LastTurn=-1;
     public Vector3[] path;
+
+    private SaveTraceData trace;
     // Start is called before the first frame update
     void Start()
     {
         pacManMovement = pacObject.GetComponent<PacManMovement>();
         unit = ghostObject.GetComponent<Unit>();
+        trace = new SaveTraceData();
+        fm = new FileManager();
     }
 
     void LateUpdate()
     {
         if (pacManMovement.turnCount != LastTurn)
         {
-            Debug.Log("Jugador: "+ pacManMovement.transform.position);
-            Debug.Log("Adversario: " + unit.transform.position);
-            Debug.Log("Recompensa: "+ pacManMovement.closestReward);
+            Debug.Log("Jugador: "+ pacManMovement.transform.position);//Vector3
+            trace.std_playerXPos = Mathf.Round(pacManMovement.transform.position.x);
+            trace.std_playerYPos = Mathf.Round(pacManMovement.transform.position.y);
 
+            Debug.Log("Adversario: " + unit.transform.position);//Vector3
+            trace.std_enemyXPos = Mathf.Round(unit.transform.position.x);
+            trace.std_enemyYPos = Mathf.Round(unit.transform.position.y);
+
+            Debug.Log("Recompensa: "+ pacManMovement.closestReward);//Vector3
+            trace.std_closestRewardXPos = Mathf.Round(pacManMovement.closestReward.x);
+            trace.std_closestRewardYPos = Mathf.Round(pacManMovement.closestReward.y);
+
+            //Utilizar variable path para obtener la distancia después de hacer su respectivo request
             //Distancia J-A
-            PathRequestManager.RequestPath(pacManMovement.transform.position, ghostObject.transform.position, OnPathFound1);
+            PathRequestManager.RequestPath(pacManMovement.transform.position, ghostObject.transform.position, OnPathFound1);//int
+            trace.std_distPlayerEnemy = path.Length;
 
             //Distancia A-R
-            PathRequestManager.RequestPath(ghostObject.transform.position, pacManMovement.closestReward, OnPathFound2);
+            PathRequestManager.RequestPath(ghostObject.transform.position, pacManMovement.closestReward, OnPathFound2);//int
+            trace.std_distEnemyReward = path.Length;
 
             //Distancia J-R
-            PathRequestManager.RequestPath(pacManMovement.transform.position, pacManMovement.closestReward, OnPathFound3);
+            PathRequestManager.RequestPath(pacManMovement.transform.position, pacManMovement.closestReward, OnPathFound3);//int
+            trace.std_distPlayerReward = path.Length;
 
-            Debug.Log("RecObtenida: " + pacManMovement.rewardNumber);
-            Debug.Log("Tiempo: " + Time.deltaTime);
-            Debug.Log("Turno: "+ pacManMovement.turnCount);
+            Debug.Log("RecObtenida: " + pacManMovement.rewardNumber);//int
+            trace.std_rewardsObtained = pacManMovement.rewardNumber;
+
+            Debug.Log("Turno: "+ pacManMovement.turnCount);//int
+            trace.std_turnCount = pacManMovement.turnCount;
+
+            fm.AddToFile("TraceData.txt", trace.ToJson() + "\n");
 
             LastTurn = pacManMovement.turnCount;
         }

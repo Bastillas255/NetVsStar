@@ -163,19 +163,16 @@ public class Manager : MonoBehaviour
             nets.Sort();
             DataSaver ds = new DataSaver(nets[populationSize-1].GetLayers(), nets[populationSize-1].GetNeurons(), nets[populationSize-1].GetWeights());
             save = ds.SaveNN();
-            fm.WriteToFile("NNTrainingData.txt", save.ToJson());
-
-            //SaveByJson(nets[populationSize-1]);
+            fm.WriteToFile("NNInternalData.txt", save.ToJson());
         }
         if(Input.GetKeyDown(KeyCode.L))
         {
-
             DataLoader dl = new DataLoader(fm.ReadFile("NNTrainingData.txt"));
 
-            //SaveData sd = new SaveData();
-            DataSaver ds = new DataSaver(dl.GetLayers(), dl.GetNeurons(), dl.GetWeigths());
-            SaveData testSave = ds.SaveNN();
-            fm.WriteToFile("NNTEST.txt", testSave.ToJson());
+            
+            //DataSaver ds = new DataSaver(dl.GetLayers(), dl.GetNeurons(), dl.GetWeigths());
+            //SaveData testSave = ds.SaveNN();
+            //fm.WriteToFile("NNTEST.txt", testSave.ToJson());
             //LoadByJson();
         }
 

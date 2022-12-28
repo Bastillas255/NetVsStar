@@ -3,50 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
-public class FileManager// : MonoBehaviour
+public class FileManager
 {
-
-    //Ruta que tendrá el archivo dentro del proyecto
-    string path;
-    //Ruta de archivos de guardado de las matrices de una red neuronal ya entrenada
-    string layersSavePath;
-    string neuronsSavePath;
-    string weightsSavePath;
-
-    ///<summary>
-    ///Crea el archivo de traza, comprueba si es que existe tal archivo, de  no existir lo crea
-    ///</summary>
-    public void CreateTraceText()
-    {
-        path = Application.dataPath + "/Traza.txt";
-        
-        //Crea el archivo si es que no existe
-        if(!File.Exists(path))
-        {
-            //OJO, esta función reemplaza todo el archivo
-            File.WriteAllText(path, "Turno Comportamiento JugadorX JugadorY EnemigoX EnemigoY RecompensasRestantes DistJE DistJR DistER ParedesJE ParedesJR ParedesER\n\n");
-        }
-    }
-
+    private string path = Application.dataPath + "/";
     public void WriteToFile(string fileName, string data)
     {
         path = Application.dataPath + "/" + fileName;
         File.WriteAllText(path, data);
     }
 
-    ///<summary>
-    ///Añade texto al archivo de traza, comprueba primero si existe
-    ///</summary>
-    ///<param name="content">String con contenido que se añadirá al archivo de texto</param>
-    public void AddTraceText(string content)
+    public void AddToFile(string fileName, string data)
     {
-        if(!File.Exists(path))
+        path = Application.dataPath + "/" + fileName;
+        if(File.Exists(path))
         {
-            CreateTraceText();
+            File.AppendAllText(path, data);
         }
-        File.AppendAllText(path, content+"\n"); //Esta función agrega contenido al archivo de texto, adicionalmente se agrega un salto de línea
+        else
+        {
+            WriteToFile(fileName, data);
+        }
     }
 
+    //Crear función que lea línea por línea
     public string ReadFile(string fileName)
     {
         string filePath = Application.dataPath + "/" + fileName;
@@ -61,94 +40,25 @@ public class FileManager// : MonoBehaviour
         else
         {
             Debug.Log("File not found");
-            return "";
+            return "File not found";
         }
     }
 
-    // Start is called before the first frame update
-    void Start()
+    public string ReadFileByLine(string fileName)
     {
-        //CreateText();
-    }
-
-    ///<summmary>
-    ///A partir de las matrices generadas por una red neuronal, crea archivos de guardado para estas.
-    ///</summary>
-    ///<param name="layersSave">Arreglo de capas de neuronas</param>
-    ///<param name="neuronsSave">Matriz bidimensional de neuronas</param>
-    ///<param name="weightsSave">Matriz tridimensional de pesos</param>
-    public void CreateTrainingSave(int[] layersSave, float[][] neuronsSave, float[][][] weightsSave)
-    {
-        //Define las rutas de los archivos para guardar el entrenamiento de la ren neuronal
-        layersSavePath = Application.dataPath + "/LayersSave.txt";
-        neuronsSavePath = Application.dataPath + "/NeuronsSave.txt";
-        weightsSavePath = Application.dataPath + "/WeightsSave.txt";
-
-        //Si ninguno de los archivos existe, los crea, se pregunta por separado en caso de existir un archivo previamente
-        if(!File.Exists(layersSavePath)) File.WriteAllText(layersSavePath,"");
-        if(!File.Exists(neuronsSavePath)) File.WriteAllText(neuronsSavePath,"");
-        if(!File.Exists(weightsSavePath)) File.WriteAllText(weightsSavePath,"");
-
-        File.AppendAllText(layersSavePath, layersToString(layersSave));
-        File.AppendAllText(neuronsSavePath, neuronsToString(neuronsSave));
-        File.AppendAllText(weightsSavePath, weightsToString(weightsSave));
-    }
-
-    ///<summary>
-    ///Convierte un arreglo de enteros a string
-    ///</summary>
-    ///<param="layersSave">Array de enteros que representa las capas de neuronas</param>
-    ///<returns>String del arreglo de números</returns>
-    private string layersToString(int[] layersSave)
-    {
-        string content = "";
-        for(int i=0; i<layersSave.Length;i++)
+        string filePath = Application.dataPath + "/" + fileName;
+        if(File.Exists(filePath))
         {
-            content = content + layersSave[i] + " ";
-        }
-        return content;
-    }
-
-    ///<summary>
-    ///Convierte una matriz bidimensional de float a string
-    ///</summary>
-    ///<param="neuronsSave">Matriz bidimensional de float que representa las neuronas</param>
-    ///<returns>String de la matriz bidimensional de números</returns>
-    private string neuronsToString(float[][] neuronsSave)
-    {
-        string content = "";
-        for(int i=0;i<neuronsSave.Length;i++)
-        {
-            for(int j=0;j<neuronsSave[i].Length;j++)
+            using (StreamReader reader = new StreamReader(filePath))
             {
-                content = content + neuronsSave[i][j] + " ";
+                string contenido = reader.ReadLine();
+                return contenido;
             }
-            content = content + "\n";
         }
-
-        return content;
-    } 
-
-    ///<summary>
-    ///Convierte una matriz tridimensional de float a string
-    ///</summary>
-    ///<param="weightsSave">Matriz tridimensional de float que representa las conexiones entre neuronas</param>
-    ///<returns>String de la matriz tridimensional de números</returns>
-    private string weightsToString(float[][][] weightsSave)
-    {
-        string content = "";
-        for(int i=0;i<weightsSave.Length;i++)
+        else
         {
-            for(int j=0;j<weightsSave[i].Length;j++)
-            {
-                for(int k=0;k<weightsSave[i][j].Length;k++)
-                {
-                    content = content + weightsSave[i][j][k] + " ";
-                }
-                content = content + "\n";
-            }
-            content = content + "\n";
+            Debug.Log("File not found");
+            return "File not found";
         }
-        return content;
     }
 }
