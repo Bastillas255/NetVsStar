@@ -29,15 +29,15 @@ public class TraceModules : MonoBehaviour
     {
         if (pacManMovement.turnCount != LastTurn)
         {
-            Debug.Log("Jugador: "+ pacManMovement.transform.position);//Vector3
+            //Debug.Log("Jugador: "+ pacManMovement.transform.position);//Vector3
             trace.std_playerXPos = Mathf.Round(pacManMovement.transform.position.x);
             trace.std_playerYPos = Mathf.Round(pacManMovement.transform.position.y);
 
-            Debug.Log("Adversario: " + unit.transform.position);//Vector3
+            //Debug.Log("Adversario: " + unit.transform.position);//Vector3
             trace.std_enemyXPos = Mathf.Round(unit.transform.position.x);
             trace.std_enemyYPos = Mathf.Round(unit.transform.position.y);
 
-            Debug.Log("Recompensa: "+ pacManMovement.closestReward);//Vector3
+            //Debug.Log("Recompensa: "+ pacManMovement.closestReward);//Vector3
             trace.std_closestRewardXPos = Mathf.Round(pacManMovement.closestReward.x);
             trace.std_closestRewardYPos = Mathf.Round(pacManMovement.closestReward.y);
 
@@ -54,13 +54,13 @@ public class TraceModules : MonoBehaviour
             PathRequestManager.RequestPath(pacManMovement.transform.position, pacManMovement.closestReward, OnPathFound3);//int
             trace.std_distPlayerReward = path.Length;
 
-            Debug.Log("RecObtenida: " + pacManMovement.rewardNumber);//int
+            //Debug.Log("RecObtenida: " + pacManMovement.rewardNumber);//int
             trace.std_rewardsObtained = pacManMovement.rewardNumber;
 
-            Debug.Log("Turno: "+ pacManMovement.turnCount);//int
+            //Debug.Log("Turno: "+ pacManMovement.turnCount);//int
             trace.std_turnCount = pacManMovement.turnCount;
 
-            fm.AddToFile("TraceData.txt", trace.ToJson() + "\n");
+            fm.AddToFile("TraceData.txt", trace.ToJson());
 
             LastTurn = pacManMovement.turnCount;
         }
@@ -71,7 +71,7 @@ public class TraceModules : MonoBehaviour
         if (pathSuccessful)
         {
             path = newPath;
-            Debug.Log("Distancia J-A: " + path.Length);
+            //Debug.Log("Distancia J-A: " + path.Length);
         }
     }
 
@@ -80,7 +80,7 @@ public class TraceModules : MonoBehaviour
         if (pathSuccessful)
         {
             path = newPath;
-            Debug.Log("Distancia A-R: " + path.Length);
+            //Debug.Log("Distancia A-R: " + path.Length);
         }
     }
 
@@ -89,7 +89,7 @@ public class TraceModules : MonoBehaviour
         if (pathSuccessful)
         {
             path = newPath;
-            Debug.Log("Distancia J-R: " + path.Length);
+            //Debug.Log("Distancia J-R: " + path.Length);
         }
     }
 

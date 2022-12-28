@@ -15,13 +15,13 @@ public class FileManager
     public void AddToFile(string fileName, string data)
     {
         path = Application.dataPath + "/" + fileName;
-        if(File.Exists(path))
+        if(!File.Exists(path))
         {
-            File.AppendAllText(path, data);
+            File.Create(path).Dispose();
         }
-        else
+        using (StreamWriter writer = new StreamWriter(path, true))
         {
-            WriteToFile(fileName, data);
+            writer.WriteLine(data);
         }
     }
 
@@ -44,16 +44,22 @@ public class FileManager
         }
     }
 
-    public string ReadFileByLine(string fileName)
+    public List<string> GetListOfLines(string fileName)
     {
         string filePath = Application.dataPath + "/" + fileName;
         if(File.Exists(filePath))
         {
+            List<string> lines = new List<string>();
+
             using (StreamReader reader = new StreamReader(filePath))
             {
-                string contenido = reader.ReadLine();
-                return contenido;
+                string linea;
+                while((linea = reader.ReadLine()) != null)
+                {
+                    lines.Add(linea);
+                }
             }
+            return lines;
         }
         else
         {

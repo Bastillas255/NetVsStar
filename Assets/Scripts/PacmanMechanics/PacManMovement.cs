@@ -305,7 +305,7 @@ public class PacManMovement : MonoBehaviour
                     }
                 }
 
-                Debug.Log("Closest Reward; " + closestReward);
+                //Debug.Log("Closest Reward; " + closestReward);
                 StartCoroutine("StartSearch", closestReward);
             }
             
