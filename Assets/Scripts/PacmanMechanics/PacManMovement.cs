@@ -26,45 +26,50 @@ public class PacManMovement : MonoBehaviour
     //NN stuff
     public NeuralNetwork net;
     private bool initilized = false;
-    private Transform hex; //transform where pac man get rewarded for pointing/closing in
-    private Material mat;
+    private Vector2 objective; //direction the human player pressed
 
 
     //Rewards Stuff
     private Vector3[] keySpots;
     public int rewardNumber;
-    float minDistance= 1000f;
-    public float fitness;
+    float minDistance = 1000f;
     private Vector3 door;
-    int aux = 4;
     public Vector3[] path;
 
-    float[] inputs = new float[13];
+    float[] inputs = new float[11];
+    float[] stdArray = new float[11];
 
     GameObject[] keySpotAuxiliar;
 
+    SaveTraceData saveTraceData;
+    FileManager fm;
+    public bool displayGizmos;
+    Manager manager;
+
     void Start()
     {
-        //keySpots should be taken for rewards on the map
-        keySpotAuxiliar= GameObject.FindGameObjectsWithTag("Consumable");
+        //keySpots are taken from rewards positions on the map
+        keySpotAuxiliar = GameObject.FindGameObjectsWithTag("Consumable");
         keySpots = new Vector3[keySpotAuxiliar.Length];
         for (int i = 0; i < keySpotAuxiliar.Length; i++)
         {
             keySpots[i] = keySpotAuxiliar[i].transform.position;
         }
 
-        door = new Vector3(11, 11, 0);
-        //Initialize
-        grid =GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
-        isMoving = false;
-        mat = GetComponent<Renderer>().material;
+        //basic assigments
         rewardNumber = 0;
-        
+        door = new Vector3(11, 11, 0);
+        grid = GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
+        manager = GameObject.FindGameObjectWithTag("GameController").GetComponent<Manager>();
+        saveTraceData = new SaveTraceData();
+        fm = new FileManager();
+        isMoving = false;
+
         //alling itself to grid
         pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
         transform.position = pacmanNode.worldPosition;//and center to it
 
-        //tracking modules
+        //this is made so the tracingModules.cs can store the closest reward to pacman correctly. this same code is repeated aftear each move
         for (int i = 0; i < keySpots.Length; i++)
         {
             float Distance = Vector3.Distance(transform.position, keySpots[i]);
@@ -77,28 +82,81 @@ public class PacManMovement : MonoBehaviour
         StartCoroutine("StartSearch", closestReward);
     }
 
+    //trainNN() is called from Manager.cs and it repeats until it has train to the last turn
+    public void TrainNN(float[] traceData)
+    {
+        while(true)
+        {
+            //NN analyses inputs and their outputs are stored
+            float[] nnOutput = net.FeedForward(traceData);
+
+            directionPressed.x = nnOutput[0];
+            directionPressed.y = nnOutput[1];
+
+            Vector2 result = directionPressed - objective;
+
+            if(result.magnitude > 0.1f)
+            {
+                Debug.Log("Fitness correcto en turno: " + traceData[10]);
+                net.AddFitness(1f);
+                break;
+            }
+            else
+            {
+                Debug.Log("Mutando en turno: " + traceData[10]);
+                net.Mutate();
+            }
+        }
+
+        // if (initilized == true)
+        // {
+        //     //this while loop should break if in last turn of trace module, good luck sanders
+        //     while (true)
+        //     {
+        //         //add the inputs
+        //         inputs = stdArray;
+
+        //         float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
+
+        //         //the net calculates this outputs,which are the movement of pacman
+        //         directionPressed.x = output[0];
+        //         directionPressed.y = output[1];
+
+        //         //we check how different this is from the dessire result
+        //         Vector2 result = directionPressed - objective;
+
+        //         if (result.magnitude > 0.1f)//if close enough we should change turn
+        //         {
+        //             //net.AddFitness(1f - result.magnitude);//how much we should add based on how close it was to the original direction
+        //             net.AddFitness(1f);//we got the right fitness
+
+        //             //so we clear this turn and we change training into the next turn data
+        //             //how do we acces changeObjective() in manager??
+        //             //manager.ChangeTurn((int)stdArray[10]+1);
+        //             break;
+        //         }
+        //         else//if results are not close enough we should mutate and try again
+        //         {
+        //             //mutate
+        //             net.Mutate();
+        //         }
+        //     } 
+        // }
+    }
+
+    //on this Update the is only pacman movement mechanics, but control is on the player
     private void Update()
     {
         if (isHuman)
         {
             directionPressed.x = Input.GetAxisRaw("Horizontal");
             directionPressed.y = Input.GetAxisRaw("Vertical");
-            //Debug.Log(directionPressed);
             if (directionPressed.magnitude != 0)
             {
-                //pacman needs to move in grid diameter distances; next line is an example
-                //Debug.DrawLine(transform.position, new Vector3(transform.position.x+ ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius*2)* directionPressed.y), transform.position.z), Color.magenta);
-
-                //doesn't take into account collisions
-                //rb.MovePosition(new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z));
-                //rb.AddForce(new Vector3(((grid.nodeRadius * 2) * directionPressed.x), ((grid.nodeRadius * 2) * directionPressed.y), 0));
                 if (!isMoving)
                 {
                     isMoving = true;
-                    //modules
-                    //Debug.Log("Player (X,Y) = " + pacmanNode.worldPosition);
                     turnCount++;
-                    //Debug.Log("Turn = " + turnCount);
 
                     //move to the next tile
                     targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
@@ -106,11 +164,6 @@ public class PacManMovement : MonoBehaviour
                     targetPosition = allignCheck.worldPosition;
                     StartCoroutine("TileMovement");
 
-                    
-                    
-                    //update closestReward for traceModules
-                    
-                   
                     if (rewardNumber == 11)
                     {
                         closestReward = door;
@@ -121,61 +174,38 @@ public class PacManMovement : MonoBehaviour
     }
 
 
+    // (W,I,P,) this will now be only execution, no changes to the NN should be made here, like fitness and stuff, manager should adress this
+    //on this Update the is only pacman movement mechanics, but control is on the net
     void FixedUpdate()
     {
-
-        if (initilized==true)
+        if (initilized == true)
         {
-            fitness = net.GetFitness();
-            if (fitness > 20f)
-                fitness = 20f;
-            mat.color = new Color(fitness/20, 1-(fitness/20), 1-(fitness/20));
-
             if (!isMoving)
             {
-                //wall vision
-                foreach (StarNode n in grid.GetNeighboursWithDiagonals(pacmanNode))
-                {
-                    inputs[aux] = (n.walkable) ? 0 : 1; //walkable put a 0 on inputs
-                    aux++;
-
-                    if (grid.playerNode == n)
-                    {
-                        inputs[2] = grid.playerNode.worldPosition.x;
-                        inputs[3] = grid.playerNode.worldPosition.y;
-                    }
-                }
-
-                //improve this, atleast on Human control
-                //some things could be better like find a way to a* to find closest reward
-                for (int i = 0; i < keySpots.Length; i++)
-                {
-                    StartCoroutine("StartSearch", keySpots[i]);
-                    float distanceToKey = path.Length;
-                    if (distanceToKey < minDistance)
-                    {
-                        minDistance = distanceToKey;
-                        closestReward = keySpots[i];
-                    }
-                }
-
                 if (rewardNumber == 11)
                 {
                     closestReward = door;
                 }
                 isMoving = true;
 
-                //NN needs to get close to ClosestReward
-
-                inputs[0] = closestReward.x - transform.position.x;
-                inputs[1] = closestReward.y - transform.position.y;
+                //add the inputs
+                inputs[0] = saveTraceData.std_playerXPos;
+                inputs[1] = saveTraceData.std_playerYPos;
+                inputs[2] = saveTraceData.std_enemyXPos;
+                inputs[3] = saveTraceData.std_enemyYPos;
+                inputs[4] = saveTraceData.std_closestRewardXPos;
+                inputs[5] = saveTraceData.std_closestRewardYPos;
+                inputs[6] = saveTraceData.std_distPlayerEnemy;
+                inputs[7] = saveTraceData.std_distPlayerReward;
+                inputs[8] = saveTraceData.std_distEnemyReward;
+                inputs[9] = saveTraceData.std_rewardsObtained;
+                inputs[10] = saveTraceData.std_turnCount;
 
                 float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
 
-                //this outpus are the movement magnitudes the net calculates
+                //this outputs are the movement magnitudes the net calculates
                 directionPressed.x = output[0];
                 directionPressed.y = output[1];
-                    
 
                 //but our movement is only ortgonal so we have to choose to move on x or y
                 if (Mathf.Abs(directionPressed.x) > Mathf.Abs(directionPressed.y))//which direction has more magnitude
@@ -190,62 +220,36 @@ public class PacManMovement : MonoBehaviour
                 }
 
                 //now we know where we are going we need to move in tiles
-
-                //we also need to check if that tile is walkable and if that tile is a keySpot
-
+                //we also need to check if that tile is walkable
                 targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
                 allignCheck = grid.NodeFromWorldPoint(targetPosition);
                 targetPosition = allignCheck.worldPosition;
-                for (int i = 0; i < keySpots.Length; i++)
-                {
-                    if (targetPosition ==keySpots[i])
-                    {
-                        rewardNumber++;
-                        net.AddFitness(100f);//fitness based on how distant pac is from objectives
-                        //erase from vector would be a better solution
-                        if (i != keySpots.Length - 1)
-                            keySpots[i] = keySpots[i + 1];
-                        else
-                            keySpots[i] = keySpots[i - 1];
-                    }
-                }
-                    
+
                 StartCoroutine("TileMovement");
-
-
-                //targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
-                //allignCheck = grid.NodeFromWorldPoint(targetPosition);
-                //targetPosition = allignCheck.worldPosition;
-                //rb.MovePosition(new Vector3(transform.position.x + (directionPressed.x), transform.position.y + (directionPressed.y), transform.position.z));
-
-                net.AddFitness((1f - Vector3.Distance(transform.position, hex.position)));//fitness based on how distant pac is from objectives
             }
-            
         }
     }
 
+    //self explanatory
     private void OnDrawGizmos()
     {
-        if (pacmanNode!=null)
+        if (displayGizmos)
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawCube(transform.position, Vector3.one * ((grid.nodeRadius * 2) - .1f));
+            if (pacmanNode != null)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawCube(transform.position, Vector3.one * ((grid.nodeRadius * 2) - .1f));
+            }
         }
-        
     }
 
-    //consume the rewards
+    //consume the rewards or grab de door collion detecction
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Consumable"))
         {
             rewardNumber++;
-            if (!isHuman)
-            {
-                net.AddFitness(100f);//fitness based on how distant pac is from objectives
-            }
-            //how to erase this horrid consumable from list
-
+            //Update closest reward
             for (int i = 0; i < keySpots.Length; i++)
             {
                 if (Vector3.Distance(keySpots[i], other.transform.position) < 1)
@@ -254,61 +258,56 @@ public class PacManMovement : MonoBehaviour
                 }
             }
             Destroy(other.gameObject);
-           
-            //Debug.Log("RewardsLeft = " + rewardsCount);
         }
 
         if (other.CompareTag("Door"))
         {
-            if (rewardNumber==11)
+            if (rewardNumber == 11)
             {
-                if (!isHuman)
-                {
-                    net.AddFitness(1000f);//fitness based on how distant pac is from objectives
-                }
-                
                 Debug.Log("Game Over");
                 Time.timeScale = 0;//game finish at this point
             }
-            //Debug.Log("RewardsLeft = " + rewardsCount);
         }
     }
 
+
+    //movement couroutine
     private IEnumerator TileMovement()
     {
-        //lerp
+        
         if (allignCheck.walkable)
         {
-            if (true)// is not a diagonal
+            //movement is using lerp 
+
+            float timeElapsed = 0;
+            while (timeElapsed < lerpDuration)
             {
-                float timeElapsed = 0;
-                while (timeElapsed < lerpDuration)
+                transform.position = Vector3.Lerp(transform.position, targetPosition, timeElapsed / lerpDuration);
+                timeElapsed += Time.deltaTime;
+                yield return null;
+            }
+            transform.position = targetPosition;
+            isMoving = false;
+            //lerp done
+
+
+            //code to calculate closest reward after movement is done
+            minDistance = 1000f;
+            for (int i = 0; i < keySpots.Length; i++)
+            {
+                if (keySpots[i] != Vector3.zero)
                 {
-                    transform.position = Vector3.Lerp(transform.position, targetPosition, timeElapsed / lerpDuration);
-                    timeElapsed += Time.deltaTime;
-                    yield return null;
-                }
-                transform.position = targetPosition;
-                isMoving = false;
-                //code to calculate closest reward
-                minDistance = 1000f;
-                for (int i = 0; i < keySpots.Length; i++)
-                {
-                    if (keySpots[i] != Vector3.zero)
+                    float Distance = Vector3.Distance(transform.position, keySpots[i]);
+                    if (Distance < minDistance)
                     {
-                        float Distance = Vector3.Distance(transform.position, keySpots[i]);
-                        if (Distance < minDistance)
-                        {
-                            minDistance = Distance;
-                            closestReward = keySpots[i];
-                        }
+                        minDistance = Distance;
+                        closestReward = keySpots[i];
                     }
                 }
-
-                //Debug.Log("Closest Reward; " + closestReward);
-                StartCoroutine("StartSearch", closestReward);
             }
-            
+            //update path
+            StartCoroutine("StartSearch", closestReward);
+
         }
         else
         {
@@ -316,12 +315,14 @@ public class PacManMovement : MonoBehaviour
             yield break;
         }
     }
+
     //search closest Path to Reward
     private void StartSearch(Vector3 target)
     {
         PathRequestManager.RequestPath(transform.position, target, OnPathFound);
     }
 
+    //RequestPath automatically activetes this function on callback, it just assign the path
     public void OnPathFound(Vector3[] newPath, bool pathSuccessful)
     {
         if (pathSuccessful)
@@ -330,10 +331,22 @@ public class PacManMovement : MonoBehaviour
         }
     }
 
-    public void Init(NeuralNetwork net, Transform hex)
+    
+    //initialization called from manager.cs, it sets the net on this pacman and the first sets of inputs of the net
+    public void Init(NeuralNetwork net, Vector2 objective/*, float[] stdArray*/)
     {
-        this.hex = hex;
+        this.objective = objective;
         this.net = net;
-        initilized = true;
+        //this.stdArray = stdArray;
+        initilized = true; 
     }
+
+    //setter for the next sets of inputs to feedfoward the net
+    public void SetObjectiveAndInputs(Vector2 objective/*, float[] stdArray*/)
+    {
+        this.objective = objective;
+        //this.stdArray = stdArray;
+    }
+
+
 }

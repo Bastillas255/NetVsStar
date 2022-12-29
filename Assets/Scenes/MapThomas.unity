@@ -6021,7 +6021,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2215815800667927634, guid: 477061bd1a3092e43a71886c3cb6cbba, type: 3}
       propertyPath: isHuman
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2215815800667927634, guid: 477061bd1a3092e43a71886c3cb6cbba, type: 3}
       propertyPath: isHumanControlled
