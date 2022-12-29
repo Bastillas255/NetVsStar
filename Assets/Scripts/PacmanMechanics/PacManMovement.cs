@@ -93,8 +93,10 @@ public class PacManMovement : MonoBehaviour
             directionPressed.x = nnOutput[0];
             directionPressed.y = nnOutput[1];
 
+            //We check if the direction "pressed" by the NN it's equals to the user input in that turn
             Vector2 result = directionPressed - objective;
 
+            //If the difference is minimal (nn chose the same direction) it adds to the fitness
             if(result.magnitude > 0.1f)
             {
                 Debug.Log("Fitness correcto en turno: " + traceData[10]);
@@ -103,45 +105,11 @@ public class PacManMovement : MonoBehaviour
             }
             else
             {
+                //If other direction is chosen, the nn mutates and asks again
                 Debug.Log("Mutando en turno: " + traceData[10]);
                 net.Mutate();
             }
         }
-
-        // if (initilized == true)
-        // {
-        //     //this while loop should break if in last turn of trace module, good luck sanders
-        //     while (true)
-        //     {
-        //         //add the inputs
-        //         inputs = stdArray;
-
-        //         float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
-
-        //         //the net calculates this outputs,which are the movement of pacman
-        //         directionPressed.x = output[0];
-        //         directionPressed.y = output[1];
-
-        //         //we check how different this is from the dessire result
-        //         Vector2 result = directionPressed - objective;
-
-        //         if (result.magnitude > 0.1f)//if close enough we should change turn
-        //         {
-        //             //net.AddFitness(1f - result.magnitude);//how much we should add based on how close it was to the original direction
-        //             net.AddFitness(1f);//we got the right fitness
-
-        //             //so we clear this turn and we change training into the next turn data
-        //             //how do we acces changeObjective() in manager??
-        //             //manager.ChangeTurn((int)stdArray[10]+1);
-        //             break;
-        //         }
-        //         else//if results are not close enough we should mutate and try again
-        //         {
-        //             //mutate
-        //             net.Mutate();
-        //         }
-        //     } 
-        // }
     }
 
     //on this Update the is only pacman movement mechanics, but control is on the player

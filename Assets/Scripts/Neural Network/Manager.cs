@@ -47,7 +47,7 @@ public class Manager : MonoBehaviour
         net.Mutate();
     }
 
-    void LoadDataFromFiles(int arrayPosition)
+    void LoadDataFromFiles()
     {
         List<string> inputDataList = fm.GetListOfLines("UserInputs.txt");
         userInputData = inputDataList.ToArray();
@@ -62,6 +62,9 @@ public class Manager : MonoBehaviour
         
         //Creamos un objeto Pacman nuevo
         pac = ((GameObject)Instantiate(pacPrefab, spawnSpot.transform.position, pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
+        //Inicializamos un pacman con un objetivo y una red neuronal
+        //Las clases se pasan por referencia, por lo tanto, la red neuronal que se pasa debería
+        //de recibir el entrenamiento
         pac.Init(net, objective);
 
         //Tanto traceData como userInputData tienen el mismo largo
@@ -70,13 +73,15 @@ public class Manager : MonoBehaviour
             //Chequea si la línea actual es vacía o null, para evitar llamados innecesarios a TrainNN
             if(!string.IsNullOrEmpty(traceData[i]) && !string.IsNullOrEmpty(userInputData[i]))
             {
+                //Cada vez se carga la información correspondiente al turno que se está leyendo
                 ChangeTurn(i);
+                //Se entrena la red neuronal
                 pac.TrainNN(stdArray);
             }
         }
 
         //Guardar información de entrenamiento
-        DataSaver ds = new DataSaver(net.GetLayers, net.GetNeurons, net.GetWeights);
+        DataSaver ds = new DataSaver(net.GetLayers(), net.GetNeurons(), net.GetWeights());
         SaveData nnData = ds.SaveNN();
         fm.WriteToFile("TrainedNNData.txt", nnData.ToJson());
     }
@@ -84,7 +89,7 @@ public class Manager : MonoBehaviour
     public void ChangeTurn(int turn)
     {
         //ChangeObjective
-        sui.LoadFromJson(aux[turn]);
+        sui.LoadFromJson(userInputData[turn]);
         if (sui.left == 1)
         {
             objective.x = -1;
@@ -103,7 +108,7 @@ public class Manager : MonoBehaviour
         }
 
         //ChangeInputs
-        std.LoadFromJson(aux[turn]);
+        std.LoadFromJson(traceData[turn]);
 
         stdArray[0] = std.std_playerXPos;
         stdArray[1] = std.std_playerYPos;
