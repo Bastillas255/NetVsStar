@@ -796,7 +796,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &142199432
 Transform:
   m_ObjectHideFlags: 0
@@ -3214,7 +3214,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &868722405
 Transform:
   m_ObjectHideFlags: 0
@@ -4194,7 +4194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pacObject: {fileID: 1855072562}
-  ghostObject: {fileID: 0}
+  ghostObject: {fileID: 1887840359}
   path: []
 --- !u!4 &1288454811
 Transform:

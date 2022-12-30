@@ -133,15 +133,19 @@ public class PacManMovement : MonoBehaviour
             {
                 if (!isMoving)
                 {
-                    isMoving = true;
-                    turnCount++;
+                    
 
                     //move to the next tile
                     targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
                     allignCheck = grid.NodeFromWorldPoint(targetPosition);
                     targetPosition = allignCheck.worldPosition;
-                    StartCoroutine("TileMovement");
 
+                    if (allignCheck.walkable)
+                    {
+                        StartCoroutine("TileMovement");
+                        isMoving = true;
+                        turnCount++;
+                    }
                     if (rewardNumber == 11)
                     {
                         closestReward = door;
@@ -161,12 +165,12 @@ public class PacManMovement : MonoBehaviour
         {
             if (!isMoving)
             {
-                turnCount++;
+                
                 if (rewardNumber == 11)
                 {
                     closestReward = door;
                 }
-                isMoving = true;
+                
 
                 //add the inputs
                 inputs = ns.traceModules;
@@ -194,8 +198,13 @@ public class PacManMovement : MonoBehaviour
                 targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
                 allignCheck = grid.NodeFromWorldPoint(targetPosition);
                 targetPosition = allignCheck.worldPosition;
-
-                StartCoroutine("TileMovement");
+                if (allignCheck.walkable)
+                {
+                    StartCoroutine("TileMovement");
+                    isMoving = true;
+                    turnCount++;
+                }
+                
             }
         }
     }
