@@ -178,7 +178,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         {
             for(int j = 0; j < neurons[i].Length; j++)
             {
-                float value = 0.25f;
+                float value = 0f; //0.25f og value
                 for(int k = 0; k < neurons[i-1].Length; k++)
                 {
                     value += weights[i-1][j][k] * neurons[i-1][k]; //Suma de todas las conexiones que tiene esta neurona con la capa anterior

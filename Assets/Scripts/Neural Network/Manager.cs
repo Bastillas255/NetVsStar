@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using System.Diagnostics;
 using System.IO;
 
 public class Manager : MonoBehaviour
@@ -32,6 +31,7 @@ public class Manager : MonoBehaviour
         //this initialization may not be necessary (retrive data from txt)
         fm = new FileManager();
         sui = new SaveUserInput();
+        std = new SaveTraceData();
         lines = new List<string>();
 
         //create random weighted NN
@@ -45,6 +45,7 @@ public class Manager : MonoBehaviour
     {
         NeuralNetwork net = new NeuralNetwork(layers);
         net.Mutate();
+        Debug.Log("Neural network initialized: "+net);
     }
 
     void LoadDataFromFiles()
@@ -65,10 +66,12 @@ public class Manager : MonoBehaviour
         //Inicializamos un pacman con un objetivo y una red neuronal
         //Las clases se pasan por referencia, por lo tanto, la red neuronal que se pasa debería
         //de recibir el entrenamiento
+        objective = Vector2.zero;
         pac.Init(net, objective);
+        Debug.Log("pacman initialized: " + pac);
 
         //Tanto traceData como userInputData tienen el mismo largo
-        for(int i=1; i<traceData.Length; i++)
+        for (int i=1; i<traceData.Length; i++)
         {
             //Chequea si la línea actual es vacía o null, para evitar llamados innecesarios a TrainNN
             if(!string.IsNullOrEmpty(traceData[i]) && !string.IsNullOrEmpty(userInputData[i]))
@@ -79,7 +82,7 @@ public class Manager : MonoBehaviour
                 pac.TrainNN(stdArray);
             }
         }
-
+        Debug.Log("Training is done");
         //Guardar información de entrenamiento
         DataSaver ds = new DataSaver(net.GetLayers(), net.GetNeurons(), net.GetWeights());
         SaveData nnData = ds.SaveNN();

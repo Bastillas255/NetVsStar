@@ -45,6 +45,7 @@ public class PacManMovement : MonoBehaviour
     FileManager fm;
     public bool displayGizmos;
     Manager manager;
+    NeuralSensor ns;
 
     void Start()
     {
@@ -61,6 +62,7 @@ public class PacManMovement : MonoBehaviour
         door = new Vector3(11, 11, 0);
         grid = GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
         manager = GameObject.FindGameObjectWithTag("GameController").GetComponent<Manager>();
+        ns = GetComponent<NeuralSensor>();
         saveTraceData = new SaveTraceData();
         fm = new FileManager();
         isMoving = false;
@@ -88,7 +90,8 @@ public class PacManMovement : MonoBehaviour
         while(true)
         {
             //NN analyses inputs and their outputs are stored
-            float[] nnOutput = net.FeedForward(traceData);
+            float[] nnOutput = new float[11];
+            nnOutput = net.FeedForward(traceData);
 
             directionPressed.x = nnOutput[0];
             directionPressed.y = nnOutput[1];
@@ -142,14 +145,16 @@ public class PacManMovement : MonoBehaviour
     }
 
 
-    // (W,I,P,) this will now be only execution, no changes to the NN should be made here, like fitness and stuff, manager should adress this
-    //on this Update the is only pacman movement mechanics, but control is on the net
-    void FixedUpdate()
+    //(W, I, P,) this will now be only execution, no changes to the NN should be made here, like fitness and stuff, manager should adress this
+   //on this Update the is only pacman movement mechanics, but control is on the net
+
+   void FixedUpdate()
     {
         if (initilized == true)
         {
             if (!isMoving)
             {
+                turnCount++;
                 if (rewardNumber == 11)
                 {
                     closestReward = door;
@@ -157,17 +162,7 @@ public class PacManMovement : MonoBehaviour
                 isMoving = true;
 
                 //add the inputs
-                inputs[0] = saveTraceData.std_playerXPos;
-                inputs[1] = saveTraceData.std_playerYPos;
-                inputs[2] = saveTraceData.std_enemyXPos;
-                inputs[3] = saveTraceData.std_enemyYPos;
-                inputs[4] = saveTraceData.std_closestRewardXPos;
-                inputs[5] = saveTraceData.std_closestRewardYPos;
-                inputs[6] = saveTraceData.std_distPlayerEnemy;
-                inputs[7] = saveTraceData.std_distPlayerReward;
-                inputs[8] = saveTraceData.std_distEnemyReward;
-                inputs[9] = saveTraceData.std_rewardsObtained;
-                inputs[10] = saveTraceData.std_turnCount;
+                inputs = ns.traceModules;
 
                 float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
 

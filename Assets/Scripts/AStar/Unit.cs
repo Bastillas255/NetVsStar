@@ -12,26 +12,21 @@ public class Unit : MonoBehaviour
     public bool displayPathGizmos;
     float lerpDuration = 1;
 
-    private void Start()
+    private void OnEnable()
     {
         target = GameObject.FindGameObjectWithTag("Player").transform;
         pac=target.GetComponent<PacManMovement>();
         lastTurn = 0;
 
         //tracking modules
-        PathRequestManager.RequestPath(transform.position, target.position, doNothing);//move one position closer
+        //PathRequestManager.RequestPath(transform.position, target.position, doNothing);//move one position closer
     }
 
-    void doNothing(Vector3[] newPath, bool pathSuccessful)
-    {
-
-    }
-
-    public void Chase(Transform pacman)
-    {
-        target = pacman;
-        //formerLoopPosition = Vector3.zero;
-    }
+    //public void Chase(Transform pacman)
+    //{
+    //    target = pacman;
+    //    //formerLoopPosition = Vector3.zero;
+    //}
 
     private void Update()
     {

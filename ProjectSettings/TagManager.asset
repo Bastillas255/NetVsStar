@@ -7,6 +7,7 @@ TagManager:
   - Consumable
   - Grid
   - Door
+  - Enemy
   layers:
   - Default
   - TransparentFX
