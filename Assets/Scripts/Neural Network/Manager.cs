@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 using System.IO;
 
 public class Manager : MonoBehaviour
@@ -35,21 +34,22 @@ public class Manager : MonoBehaviour
         lines = new List<string>();
 
         //create random weighted NN
-        InitNeuralNetworks();
+        //InitNeuralNetworks();
 
         //we create pacman,sending the data of the neural network and the txts
         CreatePacman();
     }
+    
 
     void InitNeuralNetworks()
     {
         NeuralNetwork net = new NeuralNetwork(layers);
         net.Mutate();
-        Debug.Log("Neural network initialized: "+net);
     }
 
     void LoadDataFromFiles()
     {
+        Debug.Log("is net alright?1: " + net);
         List<string> inputDataList = fm.GetListOfLines("UserInputs.txt");
         userInputData = inputDataList.ToArray();
         List<string> traceDataList = fm.GetListOfLines("TraceData.txt");
@@ -59,16 +59,19 @@ public class Manager : MonoBehaviour
     //pac stuff
     private void CreatePacman()
     {
+        NeuralNetwork net = new NeuralNetwork(layers);
+        net.Mutate();
         LoadDataFromFiles();
-        
+
         //Creamos un objeto Pacman nuevo
         pac = ((GameObject)Instantiate(pacPrefab, spawnSpot.transform.position, pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
         //Inicializamos un pacman con un objetivo y una red neuronal
         //Las clases se pasan por referencia, por lo tanto, la red neuronal que se pasa debería
         //de recibir el entrenamiento
+
         objective = Vector2.zero;
         pac.Init(net, objective);
-        Debug.Log("pacman initialized: " + pac);
+        
 
         //Tanto traceData como userInputData tienen el mismo largo
         for (int i=1; i<traceData.Length; i++)

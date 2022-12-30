@@ -46,6 +46,7 @@ public class PacManMovement : MonoBehaviour
     public bool displayGizmos;
     Manager manager;
     NeuralSensor ns;
+    float[] nnOutput = new float[11];
 
     void Start()
     {
@@ -82,37 +83,43 @@ public class PacManMovement : MonoBehaviour
             }
         }
         StartCoroutine("StartSearch", closestReward);
+
+        
     }
 
     //trainNN() is called from Manager.cs and it repeats until it has train to the last turn
     public void TrainNN(float[] traceData)
     {
-        while(true)
+        if (initilized == true)
         {
-            //NN analyses inputs and their outputs are stored
-            float[] nnOutput = new float[11];
-            nnOutput = net.FeedForward(traceData);
-
-            directionPressed.x = nnOutput[0];
-            directionPressed.y = nnOutput[1];
-
-            //We check if the direction "pressed" by the NN it's equals to the user input in that turn
-            Vector2 result = directionPressed - objective;
-
-            //If the difference is minimal (nn chose the same direction) it adds to the fitness
-            if(result.magnitude > 0.1f)
+            while (true)
             {
-                Debug.Log("Fitness correcto en turno: " + traceData[10]);
-                net.AddFitness(1f);
-                break;
-            }
-            else
-            {
-                //If other direction is chosen, the nn mutates and asks again
-                Debug.Log("Mutando en turno: " + traceData[10]);
-                net.Mutate();
+                //NN analyses inputs and their outputs are stored
+
+                nnOutput = net.FeedForward(traceData);
+
+                directionPressed.x = nnOutput[0];
+                directionPressed.y = nnOutput[1];
+
+                //We check if the direction "pressed" by the NN it's equals to the user input in that turn
+                Vector2 result = directionPressed - objective;
+
+                //If the difference is minimal (nn chose the same direction) it adds to the fitness
+                if (result.magnitude > 0.1f)
+                {
+                    Debug.Log("Fitness correcto en turno: " + traceData[10]);
+                    net.AddFitness(1f);
+                    break;
+                }
+                else
+                {
+                    //If other direction is chosen, the nn mutates and asks again
+                    Debug.Log("Mutando en turno: " + traceData[10]);
+                    net.Mutate();
+                }
             }
         }
+
     }
 
     //on this Update the is only pacman movement mechanics, but control is on the player
@@ -296,11 +303,11 @@ public class PacManMovement : MonoBehaviour
 
     
     //initialization called from manager.cs, it sets the net on this pacman and the first sets of inputs of the net
-    public void Init(NeuralNetwork net, Vector2 objective/*, float[] stdArray*/)
+    public void Init(NeuralNetwork net, Vector2 objective)
     {
         this.objective = objective;
         this.net = net;
-        //this.stdArray = stdArray;
+        Debug.Log("objective and net set: "+ net);
         initilized = true; 
     }
 

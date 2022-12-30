@@ -11,7 +11,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     //[Capa][Neurona][Conexión con neurona de capa anterior]
     private float[][][] weights; 
 
-    private float fitness = 0; //El valor de Fitness de la red
+    private float fitness; //El valor de Fitness de la red
 
     ///<summary>
     ///Inicializa la red neuronal con pesos aleatorios

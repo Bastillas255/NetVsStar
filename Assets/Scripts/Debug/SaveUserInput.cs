@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SaveUserInput : MonoBehaviour
+public class SaveUserInput
 {
     public int up;
     public int down;
