@@ -9,18 +9,18 @@ public class SaveTraceData
     public float std_playerXPos;
     public float std_playerYPos;
 
-    //Posición del enemigo
-    public float std_enemyXPos;
-    public float std_enemyYPos;
-
     //Posición de la recompensa más cercana
-    public float std_closestRewardXPos;
-    public float std_closestRewardYPos;
-    public int std_distPlayerEnemy;
-    public int std_distPlayerReward;
-    public int std_distEnemyReward;
-    public int std_rewardsObtained;
-    public int std_turnCount;
+    public float std_Reward1XPos;
+    public float std_Reward1YPos;
+
+    public float std_Reward2XPos;
+    public float std_Reward2YPos;
+
+    public float std_Reward3XPos;
+    public float std_Reward3YPos;
+
+    public float std_Reward4XPos;
+    public float std_Reward4YPos;
 
     public string ToJson()
     {

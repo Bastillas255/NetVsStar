@@ -6,6 +6,8 @@ public class TraceModules : MonoBehaviour
 {
     public GameObject pacObject;
     public GameObject ghostObject;
+    public GameObject[] rewardObjects;
+    public Vector3[] reward;
 
     private int[] playerMovements;
 
@@ -19,15 +21,20 @@ public class TraceModules : MonoBehaviour
     public Vector3[] path;
 
     private SaveTraceData trace;
+
     // Start is called before the first frame update
     void Start()
     {
-        pacManMovement = pacObject.GetComponent<PacManMovement>();
-        unit = ghostObject.GetComponent<Unit>();
         trace = new SaveTraceData();
         sui = new SaveUserInput();
         fm = new FileManager();
         playerMovements = new int[4];
+        rewardObjects = GameObject.FindGameObjectsWithTag("Consumable");
+
+        for (int i = 0; i < rewardObjects.Length; i++)
+        {
+            reward[i] = rewardObjects[i].transform.position;
+        }
     }
 
     private void RestartPlayerMovements()
@@ -46,32 +53,21 @@ public class TraceModules : MonoBehaviour
             trace.std_playerXPos = Mathf.Round(pacManMovement.transform.position.x);
             trace.std_playerYPos = Mathf.Round(pacManMovement.transform.position.y);
 
-            //Debug.Log("Adversario: " + unit.transform.position);//Vector3
-            trace.std_enemyXPos = Mathf.Round(unit.transform.position.x);
-            trace.std_enemyYPos = Mathf.Round(unit.transform.position.y);
-
             //Debug.Log("Recompensa: "+ pacManMovement.closestReward);//Vector3
-            trace.std_closestRewardXPos = Mathf.Round(pacManMovement.closestReward.x);
-            trace.std_closestRewardYPos = Mathf.Round(pacManMovement.closestReward.y);
 
-            //Utilizar variable path para obtener la distancia después de hacer su respectivo request
-            //Distancia J-A
-            PathRequestManager.RequestPath(pacManMovement.transform.position, ghostObject.transform.position, OnPathFound1);//int
-            trace.std_distPlayerEnemy = path.Length;
 
-            //Distancia A-R
-            PathRequestManager.RequestPath(ghostObject.transform.position, pacManMovement.closestReward, OnPathFound2);//int
-            trace.std_distEnemyReward = path.Length;
+            //variables in SaveTraceData needs to be changed
+            trace.std_Reward1XPos = Mathf.Round(reward[0].x);
+            trace.std_Reward1YPos = Mathf.Round(reward[0].y);
 
-            //Distancia J-R
-            PathRequestManager.RequestPath(pacManMovement.transform.position, pacManMovement.closestReward, OnPathFound3);//int
-            trace.std_distPlayerReward = path.Length;
+            trace.std_Reward1XPos = Mathf.Round(reward[1].x);
+            trace.std_Reward1YPos = Mathf.Round(reward[1].y);
 
-            //Debug.Log("RecObtenida: " + pacManMovement.rewardNumber);//int
-            trace.std_rewardsObtained = pacManMovement.rewardNumber;
+            trace.std_Reward1XPos = Mathf.Round(reward[2].x);
+            trace.std_Reward1YPos = Mathf.Round(reward[2].y);
 
-            //Debug.Log("Turno: "+ pacManMovement.turnCount);//int
-            trace.std_turnCount = pacManMovement.turnCount;
+            trace.std_Reward1XPos = Mathf.Round(reward[3].x);
+            trace.std_Reward1YPos = Mathf.Round(reward[3].y);
 
             fm.AddToFile("TraceData.txt", trace.ToJson());
 
@@ -91,33 +87,4 @@ public class TraceModules : MonoBehaviour
             fm.AddToFile("UserInputs.txt", sui.ToJson());
         }
     }
-
-    public void OnPathFound1(Vector3[] newPath, bool pathSuccessful)
-    {
-        if (pathSuccessful)
-        {
-            path = newPath;
-            //Debug.Log("Distancia J-A: " + path.Length);
-        }
-    }
-
-    public void OnPathFound2(Vector3[] newPath, bool pathSuccessful)
-    {
-        if (pathSuccessful)
-        {
-            path = newPath;
-            //Debug.Log("Distancia A-R: " + path.Length);
-        }
-    }
-
-    public void OnPathFound3(Vector3[] newPath, bool pathSuccessful)
-    {
-        if (pathSuccessful)
-        {
-            path = newPath;
-            //Debug.Log("Distancia J-R: " + path.Length);
-        }
-    }
-
-
 }

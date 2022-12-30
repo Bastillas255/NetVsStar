@@ -6,7 +6,7 @@ using System.IO;
 public class Manager : MonoBehaviour
 {
     //NN variables
-    private int[] layers = new int[] { 11, 10, 10, 2}; //first array is the input layer, second and third are hidden layers, lastly is the output layer 
+    private int[] layers = new int[] { 10, 10, 10, 4}; //first array is the input layer, second and third are hidden layers, lastly is the output layer 
     private NeuralNetwork net;
 
     //Variables to Retrive Data from txt files
@@ -14,7 +14,6 @@ public class Manager : MonoBehaviour
     SaveUserInput sui;
     SaveTraceData std;
     float[] stdArray = new float[11];
-    List<string> lines;
     string[] traceData;
     string[] userInputData;
     public Vector2 objective;
@@ -31,25 +30,14 @@ public class Manager : MonoBehaviour
         fm = new FileManager();
         sui = new SaveUserInput();
         std = new SaveTraceData();
-        lines = new List<string>();
-
-        //create random weighted NN
-        //InitNeuralNetworks();
 
         //we create pacman,sending the data of the neural network and the txts
         CreatePacman();
     }
     
 
-    void InitNeuralNetworks()
-    {
-        NeuralNetwork net = new NeuralNetwork(layers);
-        net.Mutate();
-    }
-
     void LoadDataFromFiles()
     {
-        Debug.Log("is net alright?1: " + net);
         List<string> inputDataList = fm.GetListOfLines("UserInputs.txt");
         userInputData = inputDataList.ToArray();
         List<string> traceDataList = fm.GetListOfLines("TraceData.txt");
@@ -59,6 +47,7 @@ public class Manager : MonoBehaviour
     //pac stuff
     private void CreatePacman()
     {
+        //InitNeuralNetworks
         NeuralNetwork net = new NeuralNetwork(layers);
         net.Mutate();
         LoadDataFromFiles();
@@ -118,15 +107,18 @@ public class Manager : MonoBehaviour
 
         stdArray[0] = std.std_playerXPos;
         stdArray[1] = std.std_playerYPos;
-        stdArray[2] = std.std_enemyXPos;
-        stdArray[3] = std.std_enemyYPos;
-        stdArray[4] = std.std_closestRewardXPos;
-        stdArray[5] = std.std_closestRewardYPos;
-        stdArray[6] = std.std_distPlayerEnemy;
-        stdArray[7] = std.std_distPlayerReward;
-        stdArray[8] = std.std_distEnemyReward;
-        stdArray[9] = std.std_rewardsObtained;
-        stdArray[10] = std.std_turnCount;
+
+        stdArray[2] = std.std_Reward1XPos;
+        stdArray[3] = std.std_Reward1YPos;
+
+        stdArray[4] = std.std_Reward2XPos;
+        stdArray[5] = std.std_Reward2YPos;
+
+        stdArray[6] = std.std_Reward3XPos;
+        stdArray[7] = std.std_Reward3YPos;
+
+        stdArray[8] = std.std_Reward4XPos;
+        stdArray[9] = std.std_Reward4YPos;
 
         //we apply changes back to pacman
         pac.SetObjectiveAndInputs(objective);

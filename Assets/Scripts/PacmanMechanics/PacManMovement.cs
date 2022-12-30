@@ -95,8 +95,8 @@ public class PacManMovement : MonoBehaviour
             while (true)
             {
                 //NN analyses inputs and their outputs are stored
-
                 nnOutput = net.FeedForward(traceData);
+                //this should be changed, 4 outputs now, which reward do I go? (an array with the rewards position on an array is neccesary)
 
                 directionPressed.x = nnOutput[0];
                 directionPressed.y = nnOutput[1];
@@ -105,16 +105,15 @@ public class PacManMovement : MonoBehaviour
                 Vector2 result = directionPressed - objective;
 
                 //If the difference is minimal (nn chose the same direction) it adds to the fitness
-                if (result.magnitude > 0.1f)
+                if (result.magnitude < 0.1f)
                 {
-                    Debug.Log("Fitness correcto en turno: " + traceData[10]);
-                    net.AddFitness(1f);
+                    Debug.Log("Pesos en Neuronas correcto en turno: " + traceData[10]);
                     break;
                 }
                 else
                 {
                     //If other direction is chosen, the nn mutates and asks again
-                    Debug.Log("Mutando en turno: " + traceData[10]);
+                    Debug.Log("Ajustando pesos en turno: " + traceData[10]);
                     net.Mutate();
                 }
             }
@@ -132,9 +131,7 @@ public class PacManMovement : MonoBehaviour
             if (directionPressed.magnitude != 0)
             {
                 if (!isMoving)
-                {
-                    
-
+                {                 
                     //move to the next tile
                     targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * directionPressed.x), transform.position.y + ((grid.nodeRadius * 2) * directionPressed.y), transform.position.z);
                     allignCheck = grid.NodeFromWorldPoint(targetPosition);
@@ -144,7 +141,7 @@ public class PacManMovement : MonoBehaviour
                     {
                         StartCoroutine("TileMovement");
                         isMoving = true;
-                        turnCount++;
+                        
                     }
                     if (rewardNumber == 11)
                     {
@@ -156,9 +153,8 @@ public class PacManMovement : MonoBehaviour
     }
 
 
-    //(W, I, P,) this will now be only execution, no changes to the NN should be made here, like fitness and stuff, manager should adress this
-   //on this Update the is only pacman movement mechanics, but control is on the net
-
+   //execution of NN
+   //this Update is only pacman movement mechanics, but control is on the net
    void FixedUpdate()
     {
         if (initilized == true)
@@ -174,12 +170,18 @@ public class PacManMovement : MonoBehaviour
 
                 //add the inputs
                 inputs = ns.traceModules;
+                
 
-                float[] output = net.FeedForward(inputs);//The information coming back from the NN, 
+                float[] output = net.FeedForward(inputs);//The information coming back from the NN
+                //change the inputs on here
+                
 
                 //this outputs are the movement magnitudes the net calculates
                 directionPressed.x = output[0];
                 directionPressed.y = output[1];
+
+                //if this is going to choose between two behaviours then only one output is needed, based on that input select coroutines;
+                //two possible ones,PacmanGreed and PacmanFear, the first one moves in the direction of closest reward, the other away from ghost
 
                 //but our movement is only ortgonal so we have to choose to move on x or y
                 if (Mathf.Abs(directionPressed.x) > Mathf.Abs(directionPressed.y))//which direction has more magnitude
@@ -202,7 +204,6 @@ public class PacManMovement : MonoBehaviour
                 {
                     StartCoroutine("TileMovement");
                     isMoving = true;
-                    turnCount++;
                 }
                 
             }
@@ -222,7 +223,7 @@ public class PacManMovement : MonoBehaviour
         }
     }
 
-    //consume the rewards or grab de door collion detecction
+    //consume the rewards or grab de door collision detecction
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Consumable"))
@@ -266,6 +267,7 @@ public class PacManMovement : MonoBehaviour
                 yield return null;
             }
             transform.position = targetPosition;
+            turnCount++;
             isMoving = false;
             //lerp done
 
@@ -295,6 +297,64 @@ public class PacManMovement : MonoBehaviour
         }
     }
 
+    private IEnumerator PacmanGreed()
+    {
+        float timeElapsed = 0;
+        while (timeElapsed < lerpDuration)
+        {
+            transform.position = Vector3.Lerp(transform.position, path[0], timeElapsed / lerpDuration);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = path[0];
+        isMoving = false;
+        yield break;
+    }
+
+    private IEnumerator PacmanFear()
+    {
+        //path[0] is the direcction in wich ghost is
+        //go in any other direcction but a wall
+
+        //code for wall checking
+
+        //variables that should range from -1,0 or 1
+        int auxX = -1;
+        int auxY = -1;
+        while (true)
+        {
+            targetPosition = new Vector3(transform.position.x + ((grid.nodeRadius * 2) * auxX), transform.position.y + ((grid.nodeRadius * 2) * auxY), transform.position.z);
+            allignCheck = grid.NodeFromWorldPoint(targetPosition);
+            targetPosition = allignCheck.worldPosition;
+            if (allignCheck.walkable && Vector3.Distance(targetPosition,path[0])<0.5f)
+            {
+                break;
+            }
+            else
+            {
+                if (auxX==1)
+                {
+                    auxX++;
+                }
+                else
+                {
+                    auxY++;
+                }
+                
+            }
+        }
+        float timeElapsed = 0;
+        while (timeElapsed < lerpDuration)
+        {
+            transform.position = Vector3.Lerp(transform.position, targetPosition, timeElapsed / lerpDuration);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = targetPosition;
+        isMoving = false;
+        yield break;
+    }
+
     //search closest Path to Reward
     private void StartSearch(Vector3 target)
     {
@@ -309,6 +369,7 @@ public class PacManMovement : MonoBehaviour
             path = newPath;
         }
     }
+
 
     
     //initialization called from manager.cs, it sets the net on this pacman and the first sets of inputs of the net
