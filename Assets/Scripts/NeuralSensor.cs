@@ -5,86 +5,58 @@ using UnityEngine;
 public class NeuralSensor : MonoBehaviour
 {
     PacManMovement pacManMovement;
-    Unit unit;
+    public GameObject[] rewardObjects;
+    public Vector3[] reward;
 
-    int LastTurn = -1;
     public Vector3[] path;
     
-    public float[] traceModules = new float[11];
+    public float[] traceModules = new float[10];
+    private int LastTurnCount = -1;
 
     // Start is called before the first frame update
     void Start()
     {
-        unit = GameObject.FindGameObjectWithTag("Enemy").GetComponent<Unit>();
-        unit.enabled = true;
+        traceModules = new float[10];
         pacManMovement = GetComponent<PacManMovement>();
+
+        rewardObjects = GameObject.FindGameObjectsWithTag("Consumable");
+        reward = new Vector3[rewardObjects.Length];
+        for (int i = 0; i < rewardObjects.Length; i++)
+        {
+            reward[i] = rewardObjects[i].transform.position;
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (pacManMovement.turnCount != LastTurn)
+        if (pacManMovement.turnCount != LastTurnCount)
         {
+            for (int i = 0; i < rewardObjects.Length; i++)
+            {
+                reward[i] = rewardObjects[i].transform.position;
+            }
+
             //Debug.Log("Jugador: "+ pacManMovement.transform.position);//Vector3
-            traceModules[0] = Mathf.Round(pacManMovement.transform.position.x);
-            traceModules[1] = Mathf.Round(pacManMovement.transform.position.y);
+            traceModules[0] = pacManMovement.transform.position.x;
+            traceModules[1] = pacManMovement.transform.position.y;
 
             //Debug.Log("Adversario: " + unit.transform.position);//Vector3
-            traceModules[2] = Mathf.Round(unit.transform.position.x);
-            traceModules[3] = Mathf.Round(unit.transform.position.y);
+            traceModules[2] = reward[0].x;
+            traceModules[3] = reward[0].y;
 
             //Debug.Log("Recompensa: "+ pacManMovement.closestReward);//Vector3
-            traceModules[4] = Mathf.Round(pacManMovement.closestReward.x);
-            traceModules[5] = Mathf.Round(pacManMovement.closestReward.y);
-
-            //Utilizar variable path para obtener la distancia después de hacer su respectivo request
-            //Distancia J-A
-            PathRequestManager.RequestPath(pacManMovement.transform.position, unit.transform.position, OnPathFound1);//int
-            traceModules[6] = path.Length;
-
-            //Distancia A-R
-            PathRequestManager.RequestPath(unit.transform.position, pacManMovement.closestReward, OnPathFound2);//int
-            traceModules[7] = path.Length;
-
-            //Distancia J-R
-            PathRequestManager.RequestPath(pacManMovement.transform.position, pacManMovement.closestReward, OnPathFound3);//int
-            traceModules[8] = path.Length;
-
-            //Debug.Log("RecObtenida: " + pacManMovement.rewardNumber);//int
-            traceModules[9] = pacManMovement.rewardNumber;
-
-            //Debug.Log("Turno: "+ pacManMovement.turnCount);//int
-            traceModules[10] = pacManMovement.turnCount;
+            traceModules[4] = reward[1].x;
+            traceModules[5] = reward[1].y;
 
             
-            LastTurn = pacManMovement.turnCount;
-        }
-    }
+            traceModules[6] = reward[2].x;
+            traceModules[7] = reward[2].y;
 
-    public void OnPathFound1(Vector3[] newPath, bool pathSuccessful)
-    {
-        if (pathSuccessful)
-        {
-            path = newPath;
-            //Debug.Log("Distancia J-A: " + path.Length);
-        }
-    }
+            traceModules[8] = reward[3].x;
+            traceModules[9] = reward[3].y;
 
-    public void OnPathFound2(Vector3[] newPath, bool pathSuccessful)
-    {
-        if (pathSuccessful)
-        {
-            path = newPath;
-            //Debug.Log("Distancia A-R: " + path.Length);
-        }
-    }
-
-    public void OnPathFound3(Vector3[] newPath, bool pathSuccessful)
-    {
-        if (pathSuccessful)
-        {
-            path = newPath;
-            //Debug.Log("Distancia J-R: " + path.Length);
+            LastTurnCount = pacManMovement.turnCount;
         }
     }
 }

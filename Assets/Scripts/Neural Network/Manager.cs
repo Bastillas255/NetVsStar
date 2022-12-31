@@ -6,17 +6,14 @@ using System.IO;
 public class Manager : MonoBehaviour
 {
     //NN variables
-    private int[] layers = new int[] { 10, 10, 10, 4}; //first array is the input layer, second and third are hidden layers, lastly is the output layer 
+    private int[] layers = new int[] { 10, 10, 10, 4}; //first array is the input layer, second and third are hidden layers, last is the output layer 
     private NeuralNetwork net;
 
     //Variables to Retrive Data from txt files
     private FileManager fm;
-    SaveUserInput sui;
     SaveTraceData std;
-    float[] stdArray = new float[11];
+    float[] stdArray = new float[10];
     string[] traceData;
-    string[] userInputData;
-    public Vector2 objective;
 
     //pac stuff
     public GameObject pacPrefab;
@@ -28,20 +25,10 @@ public class Manager : MonoBehaviour
     {
         //this initialization may not be necessary (retrive data from txt)
         fm = new FileManager();
-        sui = new SaveUserInput();
         std = new SaveTraceData();
 
         //we create pacman,sending the data of the neural network and the txts
         CreatePacman();
-    }
-    
-
-    void LoadDataFromFiles()
-    {
-        List<string> inputDataList = fm.GetListOfLines("UserInputs.txt");
-        userInputData = inputDataList.ToArray();
-        List<string> traceDataList = fm.GetListOfLines("TraceData.txt");
-        traceData = traceDataList.ToArray();
     }
 
     //pac stuff
@@ -58,20 +45,31 @@ public class Manager : MonoBehaviour
         //Las clases se pasan por referencia, por lo tanto, la red neuronal que se pasa debería
         //de recibir el entrenamiento
 
-        objective = Vector2.zero;
-        pac.Init(net, objective);
-        
+        pac.Init(net);
 
         //Tanto traceData como userInputData tienen el mismo largo
         for (int i=1; i<traceData.Length; i++)
         {
             //Chequea si la línea actual es vacía o null, para evitar llamados innecesarios a TrainNN
-            if(!string.IsNullOrEmpty(traceData[i]) && !string.IsNullOrEmpty(userInputData[i]))
+            if(!string.IsNullOrEmpty(traceData[i]))
             {
-                //Cada vez se carga la información correspondiente al turno que se está leyendo
-                ChangeTurn(i);
-                //Se entrena la red neuronal
-                pac.TrainNN(stdArray);
+                for (int j = 0; j < traceData.Length; j += 2)
+                {
+                    if (traceData[0] == traceData[j])//checks if the data is from a turn when a reward is taken
+                    {
+                        if (traceData[1] == traceData[j + 1])
+                        {
+                            
+                            //Cada vez se carga la información correspondiente al turno que se está leyendo
+                            ChangeTurn(i);
+                            //Se entrena la red neuronal
+                            pac.TrainNN(stdArray);
+                        }
+                        
+                    }
+                }
+                
+               
             }
         }
         Debug.Log("Training is done");
@@ -81,27 +79,14 @@ public class Manager : MonoBehaviour
         fm.WriteToFile("TrainedNNData.txt", nnData.ToJson());
     }
 
+    void LoadDataFromFiles()
+    {
+        List<string> traceDataList = fm.GetListOfLines("TraceData.txt");
+        traceData = traceDataList.ToArray();
+    }
+
     public void ChangeTurn(int turn)
     {
-        //ChangeObjective
-        sui.LoadFromJson(userInputData[turn]);
-        if (sui.left == 1)
-        {
-            objective.x = -1;
-        }
-        if (sui.right == 1)
-        {
-            objective.x = 1;
-        }
-        if (sui.up == 1)
-        {
-            objective.y = 1;
-        }
-        if (sui.down == 1)
-        {
-            objective.y = -1;
-        }
-
         //ChangeInputs
         std.LoadFromJson(traceData[turn]);
 
@@ -119,9 +104,5 @@ public class Manager : MonoBehaviour
 
         stdArray[8] = std.std_Reward4XPos;
         stdArray[9] = std.std_Reward4YPos;
-
-        //we apply changes back to pacman
-        pac.SetObjectiveAndInputs(objective);
     }
-
 }
