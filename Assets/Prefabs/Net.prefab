@@ -134,6 +134,7 @@ MonoBehaviour:
   closestReward: {x: 0, y: 0, z: 0}
   rewardNumber: 0
   path: []
+  rewardSpots: []
   displayGizmos: 0
 --- !u!114 &1347388633
 MonoBehaviour:
@@ -147,10 +148,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec29f45101ac7894a8e797a04f1f84cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ghostObject: {fileID: 0}
+  rewardObjects: []
+  reward: []
   path: []
   traceModules:
-  - 0
   - 0
   - 0
   - 0

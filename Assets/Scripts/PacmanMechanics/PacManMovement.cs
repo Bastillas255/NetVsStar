@@ -34,7 +34,7 @@ public class PacManMovement : MonoBehaviour
     public Vector3[] path;
     public Vector3[] rewardSpots;
 
-    float[] inputs;
+    float[] inputs=new float[10];
 
     public bool displayGizmos;
     NeuralSensor ns;
@@ -42,7 +42,8 @@ public class PacManMovement : MonoBehaviour
 
     bool isObjective;
     private int targetIndex;
-    private float lerpDuration=1;
+    private float lerpDuration=0.5f;
+    int biggestResultIndex;
 
     void Start()
     {
@@ -102,7 +103,7 @@ public class PacManMovement : MonoBehaviour
 
                 //closestReward is on our hands and the 4 ouputs, now we can compare them
                 float aux2= nnOutput[0];
-                int biggestResultIndex=0;
+                biggestResultIndex=0;
                 for (int i = 0; i < nnOutput.Length; i++)
                 {
                     if (nnOutput[i] > aux2)
@@ -164,17 +165,16 @@ public class PacManMovement : MonoBehaviour
             if (!isMoving)
             {
                 //add the inputs
-                inputs = new float[10];
-                Debug.Log(inputs.Length);
+                
                 inputs = ns.traceModules;
 
                 for (int i = 0; i < 10; i++)
                 {
                     inputs[i] = ns.traceModules[i];
                 }
-                Debug.Log(inputs.Length);
                 
-                
+
+
                 float[] output = net.FeedForward(inputs);//The information coming back from the NN is stored on "output" array
 
                 rewardSpots = new Vector3[4];
@@ -189,7 +189,7 @@ public class PacManMovement : MonoBehaviour
                     else
                     {
                         rewardSpots[aux].y = inputs[i];
-                        rewardSpots[aux].z = 1f;
+                        rewardSpots[aux].z = 0f;
                         aux++;
                     }
                 }
@@ -208,35 +208,66 @@ public class PacManMovement : MonoBehaviour
                         biggestResultIndex = i;
                     }
                 }
+
+
                 //now we know where we are going we need to move
                 PathRequestManager.RequestPath(transform.position, rewardSpots[biggestResultIndex], OnPathFound);
-                
+
                 isMoving = true;
                 turnCount++;
-                StartCoroutine("TileMovementNet");
+                //how many times I'm requesting for path? with one time till we get there is enough
+                StartCoroutine("UpdatePath", rewardSpots[biggestResultIndex]);
+                
             }
         }
-    }
-
-    private IEnumerator TileMovementNet()
-    {
-        //lerp
-        float timeElapsed = 0;
-        while (timeElapsed < lerpDuration)
-        {
-            transform.position = Vector3.Lerp(transform.position, path[0], timeElapsed / lerpDuration);
-            timeElapsed += Time.deltaTime;
-            yield return null;
-        }
-        transform.position = path[0];
     }
 
     //search closest Path to Reward
     private void UpdatePath(Vector3 target)
     {
-        PathRequestManager.RequestPath(transform.position, target, OnPathFound);
+        PathRequestManager.RequestPath(transform.position, target, OnPathFound2);
     }
 
+    public void OnPathFound2(Vector3[] newPath, bool pathSuccessful)
+    {
+        if (pathSuccessful)
+        {
+            path = newPath;
+            //path 0 is out of bounds?
+            //so it seems that when we are 1 node away in grid we should not use path
+            Vector3 aux;
+            Debug.Log(rewardSpots[biggestResultIndex]);
+            if (path.Length==0)
+            {
+                Debug.Log("wtf. path with 0 lenght?");
+                aux = rewardSpots[biggestResultIndex];
+                StopCoroutine("TileMovementNet");
+                StartCoroutine("TileMovementNet", aux);
+            }
+            else
+            {
+                aux = path[0];
+                //let's just give TileMovementNet
+                StopCoroutine("TileMovementNet");
+                StartCoroutine("TileMovementNet", aux);
+            }
+        }
+    }
+
+    private IEnumerator TileMovementNet(Vector3 targetPosition)
+    {
+        //lerp
+        float timeElapsed = 0;
+        while (timeElapsed < lerpDuration)
+        {
+            transform.position = Vector3.Lerp(transform.position, targetPosition, timeElapsed / lerpDuration);
+            timeElapsed += Time.deltaTime;
+            
+            yield return null;
+        }
+        transform.position = path[0];
+        isMoving = false;
+    }
 
 
     //RequestPath automatically activetes this function on callback, it just assign the path
@@ -247,6 +278,8 @@ public class PacManMovement : MonoBehaviour
             path = newPath;
         }
     }
+
+
 
     private IEnumerator TileMovement()
     {

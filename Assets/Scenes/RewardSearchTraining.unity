@@ -984,7 +984,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b36e114c9052524db8e7b84044350a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onlyDisplayPathGizmos: 0
+  onlyDisplayPathGizmos: 1
   displayGridGizmos: 0
   player: {fileID: 128531656}
   unwalkableMask:
