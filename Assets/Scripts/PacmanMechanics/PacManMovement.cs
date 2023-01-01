@@ -74,12 +74,11 @@ public class PacManMovement : MonoBehaviour
                     if (i % 2 == 0)
                     {
                         rewardSpots[aux].x = traceData[i];
-                        
                     }
                     else
                     {
                         rewardSpots[aux].y = traceData[i];
-                        rewardSpots[aux].z = 1f;
+                        rewardSpots[aux].z = 0f;
                         aux++;
                     }
                 }
@@ -237,7 +236,7 @@ public class PacManMovement : MonoBehaviour
             turnCount++;
             if (path.Length==0)
             {
-                Debug.Log("path with 0 lenght?");
+                Debug.Log("inside path with 0 lenght");
                 //move to closest reward, wich can be known with vector3 distance
                 int aux4 = 0;
                 for (int i = 2; i < 10; i++)
@@ -250,12 +249,14 @@ public class PacManMovement : MonoBehaviour
                     else
                     {
                         rewardSpots[aux4].y = ns.traceModules[i];
-                        rewardSpots[aux4].z = 1f;
+                        rewardSpots[aux4].z = 0f;
                         aux4++;
                     }
                 }
 
+
                 //we need to know which reward is the closest to NN
+
                 float minDistance = Vector3.Distance(transform.position, rewardSpots[0]);
                 for (int i = 0; i < rewardSpots.Length; i++)
                 {
@@ -266,10 +267,13 @@ public class PacManMovement : MonoBehaviour
                         closestReward = rewardSpots[i];
                     }
                 }
+                //this closest reward is sometimes wrong, how? HOW
 
+                Debug.Log("path with 0 lenght closest reward; "+ closestReward);
                 //aux = rewardSpots[biggestResultIndex];
-                StopCoroutine("TileMovementNet");
-                StartCoroutine("TileMovementNet", closestReward);
+                //StopCoroutine("TileMovementNet");
+                //StartCoroutine("TileMovementNet", aux);
+                //Debug.Log("Closest reward on path length 0 if: "+ aux);
             }
             else
             {
@@ -314,6 +318,7 @@ public class PacManMovement : MonoBehaviour
         transform.position = targetPosition;
         //turnCount ++;
         isMoving = false;
+
     }
 
 
