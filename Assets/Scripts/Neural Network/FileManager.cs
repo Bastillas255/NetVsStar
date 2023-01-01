@@ -8,7 +8,15 @@ public class FileManager
     private string path = Application.dataPath + "/";
     public void WriteToFile(string fileName, string data)
     {
-        path = Application.dataPath + "/" + fileName;
+        //path = Application.dataPath + "/" + fileName;
+        int i = 1;
+        string fileNumberedName = fileName + i + ".txt";
+        while(File.Exists(Application.dataPath + "/" + fileNumberedName))
+        {
+            i++;
+            fileNumberedName = fileName + i + ".txt";
+        }
+        path = Application.dataPath + "/" + fileNumberedName;
         File.WriteAllText(path, data);
     }
 

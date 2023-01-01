@@ -76,7 +76,7 @@ public class Manager : MonoBehaviour
         //Guardar información de entrenamiento
         DataSaver ds = new DataSaver(net.GetLayers(), net.GetNeurons(), net.GetWeights());
         SaveData nnData = ds.SaveNN();
-        fm.WriteToFile("TrainedNNData.txt", nnData.ToJson());
+        fm.WriteToFile("TrainedNNData", nnData.ToJson());
     }
 
     void LoadDataFromFiles()

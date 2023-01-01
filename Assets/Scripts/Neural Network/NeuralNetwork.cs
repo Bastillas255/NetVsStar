@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using UnityEngine;
 
 public class NeuralNetwork : IComparable<NeuralNetwork>
 {
@@ -45,7 +46,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         InitNeurons();
         InitWeigths();
 
-        CopyWeights(copyNetwork.weights);
+        CopyWeigths(copyNetwork.weights);
     }
 
     ///<summary>
@@ -59,11 +60,12 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     {
         CopyLayers(copyLayers);
         CopyNeurons(copyNeurons);
-        CopyWeights(copyWeights);
+        CopyWeigths(copyWeights);
     }
 
-    private void CopyWeights(float[][][] copyWeights)
+    private void CopyWeigths(float[][][] copyWeights)
     {
+        InitWeigths();
         for(int i = 0; i < weights.Length; i++)
         {
             for(int j = 0; j < weights[i].Length; j++)

@@ -39,6 +39,7 @@ public class PacManMovement : MonoBehaviour
     public bool displayGizmos;
     NeuralSensor ns;
     float[] nnOutput = new float[4];
+    FileManager fm;
 
     private float lerpDuration=0.5f;
     int biggestResultIndex;
@@ -57,7 +58,9 @@ public class PacManMovement : MonoBehaviour
 
         //alling itself to grid
         pacmanNode = grid.NodeFromWorldPoint(transform.position);//in which square of the grid I'm in
-        transform.position = pacmanNode.worldPosition;//and center to it        
+        transform.position = pacmanNode.worldPosition;//and center to it    
+
+        fm = new FileManager();    
     }
 
     //trainNN() is called from Manager.cs and it repeats until it has train to the last turn
@@ -155,11 +158,19 @@ public class PacManMovement : MonoBehaviour
         }
     }
 
-
+bool dataLoaded = false;
    //execution of NN
    //this Update is only pacman movement mechanics, but control is on the net
    void FixedUpdate()
    {
+        //Si no hay datos cargados, carga uno a "elección"
+        if(!dataLoaded)
+        {
+            //Si se desea cargar un entrenamiento en específico, se cambia el número
+            DataLoader dl = new DataLoader(fm.ReadFile("TrainedNNData1.txt"));
+            net = new NeuralNetwork(dl.GetLayers(), dl.GetNeurons(), dl.GetWeigths());
+            dataLoaded = true;//Si no es necesario cargar datos y sólo se desea el entrenamiento actual, cambiar dataLoaded a true
+        }
         if (initilized == true)
         {
             if (!isMoving)
