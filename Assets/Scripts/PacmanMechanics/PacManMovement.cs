@@ -30,18 +30,16 @@ public class PacManMovement : MonoBehaviour
 
     //Rewards Stuff
     public int rewardNumber;
-    private Vector3 door;
     public Vector3[] path;
+    private int targetIndex;
     public Vector3[] rewardSpots;
 
-    float[] inputs=new float[10];
+    float[] inputs=new float[14];
 
     public bool displayGizmos;
     NeuralSensor ns;
-    float[] nnOutput = new float[10];
+    float[] nnOutput = new float[4];
 
-    bool isObjective;
-    private int targetIndex;
     private float lerpDuration=0.5f;
     int biggestResultIndex;
 
@@ -49,7 +47,6 @@ public class PacManMovement : MonoBehaviour
     {
         //basic assigments
         rewardNumber = 0;
-        door = new Vector3(11, 11, 0);
         grid = GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
         ns = GetComponent<NeuralSensor>();
         isMoving = false;
@@ -72,7 +69,7 @@ public class PacManMovement : MonoBehaviour
                 //array of rewards
                 rewardSpots= new Vector3[4];
                 int aux = 0;
-                for (int i = 2; i < traceData.Length; i++)
+                for (int i = 2; i < 10; i++)
                 {
                     if (i % 2 == 0)
                     {
@@ -179,7 +176,7 @@ public class PacManMovement : MonoBehaviour
 
                 rewardSpots = new Vector3[4];
                 int aux = 0;
-                for (int i = 2; i < inputs.Length; i++)
+                for (int i = 2; i < 10; i++)
                 {
                     if (i % 2 == 0)
                     {
@@ -210,14 +207,12 @@ public class PacManMovement : MonoBehaviour
                 }
 
 
-                //now we know where we are going we need to move
-                PathRequestManager.RequestPath(transform.position, rewardSpots[biggestResultIndex], OnPathFound);
-
-                isMoving = true;
-                turnCount++;
-                //how many times I'm requesting for path? with one time till we get there is enough
-                StartCoroutine("UpdatePath", rewardSpots[biggestResultIndex]);
+                //now we need to move
                 
+                //isMoving = true;
+                //turnCount++;
+                Debug.Log("rewardSpot selected: " + rewardSpots[biggestResultIndex]);
+                StartCoroutine("UpdatePath", rewardSpots[biggestResultIndex]);
             }
         }
     }
@@ -233,39 +228,91 @@ public class PacManMovement : MonoBehaviour
         if (pathSuccessful)
         {
             path = newPath;
-            //path 0 is out of bounds?
-            //so it seems that when we are 1 node away in grid we should not use path
+            //targetIndex = 0;
+            //neural sensors are also to blame, the are 1 turn behind, we should just take all that that in fixed update
+
+            //we don't want to step on a path.length 0
+            //when we are 1 node away in grid we should not use path, sometimes path.length becomes 0 an we get a out of index error
             Vector3 aux;
-            Debug.Log(rewardSpots[biggestResultIndex]);
+            turnCount++;
             if (path.Length==0)
             {
-                Debug.Log("wtf. path with 0 lenght?");
-                aux = rewardSpots[biggestResultIndex];
+                Debug.Log("path with 0 lenght?");
+                //move to closest reward, wich can be known with vector3 distance
+                int aux4 = 0;
+                for (int i = 2; i < 10; i++)
+                {
+                    if (i % 2 == 0)
+                    {
+                        rewardSpots[aux4].x = ns.traceModules[i];
+
+                    }
+                    else
+                    {
+                        rewardSpots[aux4].y = ns.traceModules[i];
+                        rewardSpots[aux4].z = 1f;
+                        aux4++;
+                    }
+                }
+
+                //we need to know which reward is the closest to NN
+                float minDistance = Vector3.Distance(transform.position, rewardSpots[0]);
+                for (int i = 0; i < rewardSpots.Length; i++)
+                {
+                    float Distance = Vector3.Distance(transform.position, rewardSpots[i]);
+                    if (Distance < minDistance)
+                    {
+                        minDistance = Distance;
+                        closestReward = rewardSpots[i];
+                    }
+                }
+
+                //aux = rewardSpots[biggestResultIndex];
                 StopCoroutine("TileMovementNet");
-                StartCoroutine("TileMovementNet", aux);
+                StartCoroutine("TileMovementNet", closestReward);
             }
             else
             {
                 aux = path[0];
                 //let's just give TileMovementNet
                 StopCoroutine("TileMovementNet");
-                StartCoroutine("TileMovementNet", aux);
+                StartCoroutine("TileMovementNet", aux); //aux here in case of uncomment
             }
         }
     }
 
-    private IEnumerator TileMovementNet(Vector3 targetPosition)
+    private IEnumerator TileMovementNet(Vector3 targetPosition)//og is only "vector3 targetPosition"
     {
         //lerp
+        //Vector3 currentWaypoint = path[0];
+        //while (true)
+        //{
+        //    if (transform.position == currentWaypoint)
+        //    {
+        //        targetIndex++;
+        //        if (targetIndex >= path.Length)
+        //        {
+        //            yield break;
+        //        }
+        //        currentWaypoint = path[targetIndex];
+        //    }
+
+        //    transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, 5f * Time.deltaTime);
+        //    yield return null;
+
+        //}
+        //og tileMovementNet
+
         float timeElapsed = 0;
         while (timeElapsed < lerpDuration)
         {
             transform.position = Vector3.Lerp(transform.position, targetPosition, timeElapsed / lerpDuration);
             timeElapsed += Time.deltaTime;
-            
+
             yield return null;
         }
-        transform.position = path[0];
+        transform.position = targetPosition;
+        //turnCount ++;
         isMoving = false;
     }
 
@@ -287,7 +334,6 @@ public class PacManMovement : MonoBehaviour
         if (allignCheck.walkable)
         {
             //movement is using lerp 
-
             float timeElapsed = 0;
             while (timeElapsed < lerpDuration)
             {
@@ -324,7 +370,7 @@ public class PacManMovement : MonoBehaviour
     {
         if (other.CompareTag("Consumable"))
         {
-
+            Debug.Log("collisiono con; "+other.name);
             //Destroy(other.gameObject);
             //instead of destroying the reward, it will get teleported away
             other.gameObject.transform.position = Vector3.up*1000;

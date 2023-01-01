@@ -7,8 +7,6 @@ public class TraceModules : MonoBehaviour
     private GameObject[] rewardObjects;
     private Vector3[] reward;
 
-
-
     public GameObject pacObject;
     PacManMovement pacManMovement;
 
@@ -57,6 +55,23 @@ public class TraceModules : MonoBehaviour
 
             trace.std_Reward4XPos = reward[3].x;
             trace.std_Reward4YPos = reward[3].y;
+
+            if (reward[0].y==1000)
+            {
+                trace.std_Reward1Grabed = 1;
+            }
+            if (reward[1].y == 1000)
+            {
+                trace.std_Reward2Grabed = 1;
+            }
+            if (reward[2].y == 1000)
+            {
+                trace.std_Reward3Grabed = 1;
+            }
+            if (reward[3].y == 1000)
+            {
+                trace.std_Reward4Grabed = 1;
+            }
 
             fm.AddToFile("TraceData.txt", trace.ToJson());
 

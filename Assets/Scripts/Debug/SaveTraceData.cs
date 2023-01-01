@@ -22,6 +22,11 @@ public class SaveTraceData
     public float std_Reward4XPos;
     public float std_Reward4YPos;
 
+    public float std_Reward1Grabed;
+    public float std_Reward2Grabed;
+    public float std_Reward3Grabed;
+    public float std_Reward4Grabed;
+
     public string ToJson()
     {
         return JsonUtility.ToJson(this);

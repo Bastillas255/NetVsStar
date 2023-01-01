@@ -6,13 +6,13 @@ using System.IO;
 public class Manager : MonoBehaviour
 {
     //NN variables
-    private int[] layers = new int[] { 10, 10, 10, 4}; //first array is the input layer, second and third are hidden layers, last is the output layer 
+    private int[] layers = new int[] { 14, 10, 10, 4}; //first array is the input layer, second and third are hidden layers, last is the output layer 
     private NeuralNetwork net;
 
     //Variables to Retrive Data from txt files
     private FileManager fm;
     SaveTraceData std;
-    float[] stdArray = new float[10];
+    float[] stdArray = new float[14];
     string[] traceData;
 
     //pac stuff
@@ -104,5 +104,10 @@ public class Manager : MonoBehaviour
 
         stdArray[8] = std.std_Reward4XPos;
         stdArray[9] = std.std_Reward4YPos;
+
+        stdArray[10] = std.std_Reward1Grabed;
+        stdArray[11] = std.std_Reward2Grabed;
+        stdArray[12] = std.std_Reward3Grabed;
+        stdArray[13] = std.std_Reward4Grabed;
     }
 }
