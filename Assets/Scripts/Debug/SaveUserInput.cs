@@ -4,10 +4,7 @@ using UnityEngine;
 
 public class SaveUserInput
 {
-    public int up;
-    public int down;
-    public int left;
-    public int right;
+    public float[] rewardSelection;
 
     public string ToJson()
     {

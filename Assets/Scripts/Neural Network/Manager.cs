@@ -12,8 +12,10 @@ public class Manager : MonoBehaviour
     //Variables to Retrive Data from txt files
     private FileManager fm;
     SaveTraceData std;
+    SaveUserInput sui;
     float[] stdArray = new float[14];
     string[] traceData;
+    string[] userOutputData;
 
     //pac stuff
     public GameObject pacPrefab;
@@ -26,6 +28,7 @@ public class Manager : MonoBehaviour
         //this initialization may not be necessary (retrive data from txt)
         fm = new FileManager();
         std = new SaveTraceData();
+        sui = new SaveUserInput();
 
         //we create pacman,sending the data of the neural network and the txts
         CreatePacman();
@@ -47,7 +50,6 @@ public class Manager : MonoBehaviour
 
         pac.Init(net);
 
-        //Tanto traceData como userInputData tienen el mismo largo
         for (int i=1; i<traceData.Length; i++)
         {
             //Chequea si la línea actual es vacía o null, para evitar llamados innecesarios a TrainNN
@@ -63,7 +65,7 @@ public class Manager : MonoBehaviour
                             //Cada vez se carga la información correspondiente al turno que se está leyendo
                             ChangeTurn(i);
                             //Se entrena la red neuronal
-                            pac.TrainNN(stdArray);
+                            pac.TrainNN(stdArray, sui.rewardSelection);
                         }
                         
                     }
@@ -83,6 +85,8 @@ public class Manager : MonoBehaviour
     {
         List<string> traceDataList = fm.GetListOfLines("TraceData.txt");
         traceData = traceDataList.ToArray();
+        List<string> userOutputList = fm.GetListOfLines("ClosestRewardEveryTurn.txt");
+        userOutputData = userOutputList.ToArray();
     }
 
     public void ChangeTurn(int turn)
@@ -109,5 +113,7 @@ public class Manager : MonoBehaviour
         stdArray[11] = std.std_Reward2Grabed;
         stdArray[12] = std.std_Reward3Grabed;
         stdArray[13] = std.std_Reward4Grabed;
+
+        sui.LoadFromJson(userOutputData[turn]);
     }
 }

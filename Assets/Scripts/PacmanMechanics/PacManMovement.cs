@@ -64,7 +64,7 @@ public class PacManMovement : MonoBehaviour
     }
 
     //trainNN() is called from Manager.cs and it repeats until it has train to the last turn
-    public void TrainNN(float[] traceData)
+    public void TrainNN(float[] traceData, float[] userOutputs)
     {
         if (initilized == true)
         {
@@ -73,59 +73,19 @@ public class PacManMovement : MonoBehaviour
                 //NN analyses inputs and their outputs are stored
                 nnOutput = net.FeedForward(traceData); //4 outputs, they return one of the rewards on the next to be made array
 
-                //array of rewards
-                rewardSpots= new Vector3[4];
-                int aux = 0;
-                for (int i = 2; i < 10; i++)
+                int matchCounter = 0;
+                for(int i = 0; i < nnOutput.Length; i++)
                 {
-                    if (i % 2 == 0)
+                    if(userOutputs[i] == Mathf.Round(nnOutput[i]))
                     {
-                        rewardSpots[aux].x = traceData[i];
-                    }
-                    else
-                    {
-                        rewardSpots[aux].y = traceData[i];
-                        rewardSpots[aux].z = 0f;
-                        aux++;
+                        matchCounter++;
                     }
                 }
-
-                //we need to know which reward is the closest to NN
-                float minDistance = Vector3.Distance(transform.position, rewardSpots[0]);
-                for (int i = 0; i < rewardSpots.Length; i++)
-                {
-                    float Distance = Vector3.Distance(transform.position, rewardSpots[i]);
-                    if (Distance < minDistance)
-                    {
-                        minDistance = Distance;
-                        closestReward = rewardSpots[i];
-                    }
-                }
-                //code adove is using vector3.distance instead of checking path lenght, the exact distance can only be found with the Coroutine bellow
-                //StartCoroutine("UpdatePath", closestReward);
-
-                //closestReward is on our hands and the 4 ouputs, now we can compare them
-                float aux2= nnOutput[0];
-                biggestResultIndex=0;
-                for (int i = 0; i < nnOutput.Length; i++)
-                {
-                    if (nnOutput[i] > aux2)
-                    {
-                        aux2 = nnOutput[i];
-                        biggestResultIndex=i;
-                    }
-                }
-                
-                //If rewardSpot selected is also the closestReward we can go to the next turn
-                if (rewardSpots[biggestResultIndex]==closestReward)
+                if(matchCounter == 4)
                 {
                     break;
                 }
-                else
-                {
-                    //If other reward is chosen, the nn mutates and asks again
-                    net.Mutate();
-                }
+                net.Mutate(); //Quizás Backpropagation?
             }
         }
     }
@@ -158,7 +118,7 @@ public class PacManMovement : MonoBehaviour
         }
     }
 
-bool dataLoaded = false;
+bool dataLoaded = true;
    //execution of NN
    //this Update is only pacman movement mechanics, but control is on the net
    void FixedUpdate()
@@ -167,7 +127,7 @@ bool dataLoaded = false;
         if(!dataLoaded)
         {
             //Si se desea cargar un entrenamiento en específico, se cambia el número
-            DataLoader dl = new DataLoader(fm.ReadFile("TrainedNNData1.txt"));
+            DataLoader dl = new DataLoader(fm.ReadFile("TrainedNNData14.txt"));
             net = new NeuralNetwork(dl.GetLayers(), dl.GetNeurons(), dl.GetWeigths());
             dataLoaded = true;//Si no es necesario cargar datos y sólo se desea el entrenamiento actual, cambiar dataLoaded a true
         }

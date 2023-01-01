@@ -11,6 +11,8 @@ public class TraceModules : MonoBehaviour
     PacManMovement pacManMovement;
 
     FileManager fm;
+    SaveUserInput sui;
+
     public Vector3[] path;
 
     private SaveTraceData trace;
@@ -20,6 +22,7 @@ public class TraceModules : MonoBehaviour
     void Start()
     {
         trace = new SaveTraceData();
+        sui = new SaveUserInput();
         fm = new FileManager();
 
         pacManMovement = pacObject.GetComponent<PacManMovement>();
@@ -76,6 +79,64 @@ public class TraceModules : MonoBehaviour
             fm.AddToFile("TraceData.txt", trace.ToJson());
 
             LastTurnCount = pacManMovement.turnCount;
+
+            float[] rewardSelection = new float[4];
+            Vector3[] rewardsVectorPosition = new Vector3[4];
+
+            rewardsVectorPosition[0] = new Vector3(trace.std_Reward1XPos, trace.std_Reward1YPos, 0f);
+            rewardsVectorPosition[1] = new Vector3(trace.std_Reward2XPos, trace.std_Reward2YPos, 0f);
+            rewardsVectorPosition[2] = new Vector3(trace.std_Reward3XPos, trace.std_Reward3YPos, 0f);
+            rewardsVectorPosition[3] = new Vector3(trace.std_Reward4XPos, trace.std_Reward4YPos, 0f);
+
+            float minDistance = 1000f; //Vector3.Distance(new Vector3(std_playerXPos, std_playerYPos), /*rewardSpots[0]*/);
+            for (int i = 0; i < rewardsVectorPosition.Length; i++)
+            {
+                float distance = Vector3.Distance(pacManMovement.transform.position, rewardsVectorPosition[i]);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                }
+                rewardSelection[i] = distance;
+            }
+
+            for(int i = 0; i < rewardSelection.Length; i++)
+            {
+                if(rewardSelection[i] == minDistance)
+                {
+                    rewardSelection[i] = 1f;
+                }
+                else
+                {
+                    rewardSelection[i] = 0f;
+                }
+            }
+
+            sui.rewardSelection = rewardSelection;
+
+            fm.AddToFile("ClosestRewardEveryTurn.txt", sui.ToJson());
         }
     }
+
+    // public void CalculateDistance()
+    // {
+    //     Vector3[] rewardsVectorPosition = new Vector3()[4];
+    //     Vector3 playerVectorPosition = new Vector3(std_playerXPos, std_playerYPos, 0f);
+
+    //     rewardsVectorPosition[0] = new Vector3(std_Reward1XPos, std_Reward1YPos, 0f);
+    //     rewardsVectorPosition[1] = new Vector3(std_Reward2XPos, std_Reward2YPos, 0f);
+    //     rewardsVectorPosition[2] = new Vector3(std_Reward3XPos, std_Reward3YPos, 0f);
+    //     rewardsVectorPosition[3] = new Vector3(std_Reward4XPos, std_Reward4YPos, 0f);
+
+    //     //minDistance = 100f; //Vector3.Distance(new Vector3(std_playerXPos, std_playerYPos), /*rewardSpots[0]*/);
+    //     for (int i = 0; i < rewardsVectorPosition.Length; i++)
+    //     {
+    //         float distance = Vector3.Distance(playerVectorPosition, rewardsVectorPosition[i]);
+    //         if (distance < minDistance)
+    //         {
+    //             // minDistance = distance;
+    //             // closestReward = new Vector3(rewardsVectorPosition[i]);
+                
+    //         }
+    //     }
+    // }
 }

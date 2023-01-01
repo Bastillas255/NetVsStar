@@ -205,7 +205,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     //Realiza una mutación al valor del peso
 
                     //Elige al azar una mutación
-                    float randomNumber = UnityEngine.Random.Range(0f, 10f);
+                    float randomNumber = UnityEngine.Random.Range(0f, 8f);
 
                     //4 tipos distintos de mutaciones
                     if(randomNumber <= 2f)
@@ -215,18 +215,22 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     } else if(randomNumber <= 4f)
                     {
                         //Elige un peso aleatorio entre -1 y 1
-                        weight = UnityEngine.Random.Range(-0.5f, 0.5f);
+                        //weight = UnityEngine.Random.Range(-0.5f, 0.5f);
+                        float factor = UnityEngine.Random.Range(0f, 1f) + 1f;
+                        weight *= factor;
                     } else if(randomNumber <= 6f)
                     {
                         //Aumenta al azar entre un 0% y un 100%
-                        float factor = UnityEngine.Random.Range(0f, 1f) + 1f;
-                        weight *= factor;
-                    } else if(randomNumber <= 8f)
-                    {
-                        //Disminuye al azar entre un 0% y un 100%
+                        //float factor = UnityEngine.Random.Range(0f, 1f) + 1f;
+                        //weight *= factor;
                         float factor = UnityEngine.Random.Range(0f, 1f);
                         weight *= factor;
-                    }
+                    } //else if(randomNumber <= 8f)
+                    //{
+                        //Disminuye al azar entre un 0% y un 100%
+                    //    float factor = UnityEngine.Random.Range(0f, 1f);
+                    //    weight *= factor;
+                    //}
 
                     weights[i][j][k] = weight;
                 }
