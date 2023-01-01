@@ -42,10 +42,14 @@ public class PacManMovement : MonoBehaviour
 
     private float lerpDuration=0.5f;
     int biggestResultIndex;
+    Vector3 auxVector;
+    int biggestResultIndexAuxiliar;
+
 
     void Start()
     {
         //basic assigments
+        auxVector=Vector3.zero ;
         rewardNumber = 0;
         grid = GameObject.FindGameObjectWithTag("Grid").GetComponent<StarGrid>();
         ns = GetComponent<NeuralSensor>();
@@ -108,7 +112,7 @@ public class PacManMovement : MonoBehaviour
                         biggestResultIndex=i;
                     }
                 }
-
+                
                 //If rewardSpot selected is also the closestReward we can go to the next turn
                 if (rewardSpots[biggestResultIndex]==closestReward)
                 {
@@ -204,10 +208,11 @@ public class PacManMovement : MonoBehaviour
                         biggestResultIndex = i;
                     }
                 }
-
+                biggestResultIndexAuxiliar = biggestResultIndex;
+                Debug.Log("Fixed update index; "+ biggestResultIndexAuxiliar);
 
                 //now we need to move
-                
+
                 //isMoving = true;
                 //turnCount++;
                 Debug.Log("rewardSpot selected: " + rewardSpots[biggestResultIndex]);
@@ -232,55 +237,64 @@ public class PacManMovement : MonoBehaviour
 
             //we don't want to step on a path.length 0
             //when we are 1 node away in grid we should not use path, sometimes path.length becomes 0 an we get a out of index error
-            Vector3 aux;
+            
+
             turnCount++;
             if (path.Length==0)
             {
                 Debug.Log("inside path with 0 lenght");
+                //in one of the othogonal positions is the reward, get there, move on grid.nodeRadius distance somewhere
+
+                Debug.Log("inside path with 0 lenght index; " + biggestResultIndexAuxiliar);
+                //Debug.Log("can it be just 1 vector3?"+ auxVector);
+                StopCoroutine("TileMovementNet");
+                StartCoroutine("TileMovementNet", rewardSpots[biggestResultIndexAuxiliar]); //aux here in case of uncomment
+                //transform.position = Vector3.MoveTowards(transform.position, path, 3f * Time.deltaTime);
                 //move to closest reward, wich can be known with vector3 distance
-                int aux4 = 0;
-                for (int i = 2; i < 10; i++)
-                {
-                    if (i % 2 == 0)
-                    {
-                        rewardSpots[aux4].x = ns.traceModules[i];
 
-                    }
-                    else
-                    {
-                        rewardSpots[aux4].y = ns.traceModules[i];
-                        rewardSpots[aux4].z = 0f;
-                        aux4++;
-                    }
-                }
+                //int aux4 = 0;
+                //for (int i = 2; i < 10; i++)
+                //{
+                //    if (i % 2 == 0)
+                //    {
+                //        rewardSpots[aux4].x = ns.traceModules[i];
+
+                //    }
+                //    else
+                //    {
+                //        rewardSpots[aux4].y = ns.traceModules[i];
+                //        rewardSpots[aux4].z = 0f;
+                //        aux4++;
+                //    }
+                //}
 
 
-                //we need to know which reward is the closest to NN
+                ////we need to know which reward is the closest to NN
 
-                float minDistance = Vector3.Distance(transform.position, rewardSpots[0]);
-                for (int i = 0; i < rewardSpots.Length; i++)
-                {
-                    float Distance = Vector3.Distance(transform.position, rewardSpots[i]);
-                    if (Distance < minDistance)
-                    {
-                        minDistance = Distance;
-                        closestReward = rewardSpots[i];
-                    }
-                }
-                //this closest reward is sometimes wrong, how? HOW
+                //float minDistance = Vector3.Distance(transform.position, rewardSpots[0]);
+                //for (int i = 0; i < rewardSpots.Length; i++)
+                //{
+                //    float Distance = Vector3.Distance(transform.position, rewardSpots[i]);
+                //    if (Distance < minDistance)
+                //    {
+                //        minDistance = Distance;
+                //        closestReward = rewardSpots[i];
+                //    }
+                //}
+                ////this closest reward is sometimes wrong, how? HOW
 
-                Debug.Log("path with 0 lenght closest reward; "+ closestReward);
-                //aux = rewardSpots[biggestResultIndex];
-                //StopCoroutine("TileMovementNet");
-                //StartCoroutine("TileMovementNet", aux);
-                //Debug.Log("Closest reward on path length 0 if: "+ aux);
+                //Debug.Log("path with 0 lenght closest reward; "+ closestReward);
+                ////aux = rewardSpots[biggestResultIndex];
+                ////StopCoroutine("TileMovementNet");
+                ////StartCoroutine("TileMovementNet", aux);
+                ////Debug.Log("Closest reward on path length 0 if: "+ aux);
             }
             else
             {
-                aux = path[0];
+                auxVector = path[0];
                 //let's just give TileMovementNet
                 StopCoroutine("TileMovementNet");
-                StartCoroutine("TileMovementNet", aux); //aux here in case of uncomment
+                StartCoroutine("TileMovementNet", auxVector); //aux here in case of uncomment
             }
         }
     }
