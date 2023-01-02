@@ -25,7 +25,7 @@ public class PacManMovement : MonoBehaviour
     public Vector3 closestReward;
 
     //NN stuff
-    public NeuralNetwork net;
+    public BackPropNN net;
     private bool initilized = false;
 
     //Rewards Stuff
@@ -73,6 +73,7 @@ public class PacManMovement : MonoBehaviour
                 //Debug.Log("Entrenando red neuronal");
                 //NN analyses inputs and their outputs are stored
                 nnOutput = net.FeedForward(traceData); //4 outputs, they return one of the rewards on the next to be made array
+                net.BackProp(userOutputs);
 
                 int matchCounter = 0;
                 for(int i = 0; i < nnOutput.Length; i++)
@@ -86,7 +87,6 @@ public class PacManMovement : MonoBehaviour
                 {
                     break;
                 }
-                net.Mutate(); //Quizás Backpropagation?
             }
         }
     }
@@ -128,9 +128,9 @@ bool dataLoaded = true;
         if(!dataLoaded)
         {
             //Si se desea cargar un entrenamiento en específico, se cambia el número
-            DataLoader dl = new DataLoader(fm.ReadFile("TrainedNNData14.txt"));
-            net = new NeuralNetwork(dl.GetLayers(), dl.GetNeurons(), dl.GetWeigths());
-            dataLoaded = true;//Si no es necesario cargar datos y sólo se desea el entrenamiento actual, cambiar dataLoaded a true
+            //DataLoader dl = new DataLoader(fm.ReadFile("TrainedNNData14.txt"));
+            //net = new NeuralNetwork(dl.GetLayers(), dl.GetNeurons(), dl.GetWeigths());
+            //dataLoaded = true;//Si no es necesario cargar datos y sólo se desea el entrenamiento actual, cambiar dataLoaded a true
         }
         if (initilized == true)
         {
@@ -140,10 +140,10 @@ bool dataLoaded = true;
                 
                 inputs = ns.traceModules;
 
-                for (int i = 0; i < 10; i++)
-                {
-                    inputs[i] = ns.traceModules[i];
-                }
+                //for (int i = 0; i < 10; i++)
+                //{
+                //    inputs[i] = ns.traceModules[i];
+                //}
                 
 
 
@@ -181,7 +181,6 @@ bool dataLoaded = true;
                     }
                 }
                 biggestResultIndexAuxiliar = biggestResultIndex;
-                Debug.Log("Fixed update index; "+ biggestResultIndexAuxiliar);
 
                 //now we need to move
 
@@ -370,7 +369,7 @@ bool dataLoaded = true;
 
 
     //initialization called from manager.cs, it sets the net on this pacman and the first sets of inputs of the net
-    public void Init(NeuralNetwork net)
+    public void Init(BackPropNN net)
     {
         this.net = net;
         initilized = true; 

@@ -5,10 +5,6 @@ using System.IO;
 
 public class Manager : MonoBehaviour
 {
-    //NN variables
-    private int[] layers = new int[] { 14, 10, 10, 4}; //first array is the input layer, second and third are hidden layers, last is the output layer 
-    private NeuralNetwork net;
-
     //Variables to Retrive Data from txt files
     private FileManager fm;
     SaveTraceData std;
@@ -38,7 +34,7 @@ public class Manager : MonoBehaviour
     private void CreatePacman()
     {
         //InitNeuralNetworks
-        NeuralNetwork net = new NeuralNetwork(layers);
+        BackPropNN net = new BackPropNN(new int[] { 14, 25, 25, 4 }); //intiilize network
         //net.Mutate();
         //LoadDataFromFiles();
 
@@ -79,9 +75,9 @@ public class Manager : MonoBehaviour
         
         Debug.Log("Training is done");
         //Guardar información de entrenamiento
-        DataSaver ds = new DataSaver(net.GetLayers(), net.GetNeurons(), net.GetWeights());
-        SaveData nnData = ds.SaveNN();
-        fm.WriteToFile("TrainedNNData", nnData.ToJson());
+        //DataSaver ds = new DataSaver(net.GetLayers(), net.GetNeurons(), net.GetWeights());
+        //SaveData nnData = ds.SaveNN();
+        //fm.WriteToFile("TrainedNNData", nnData.ToJson());
     }
 
     void LoadDataFromFiles(int number)
