@@ -8,6 +8,7 @@ public class TraceModules : MonoBehaviour
     private Vector3[] reward;
 
     public GameObject pacObject;
+    public int fileNumber;
     PacManMovement pacManMovement;
 
     FileManager fm;
@@ -76,7 +77,7 @@ public class TraceModules : MonoBehaviour
                 trace.std_Reward4Grabed = 1;
             }
 
-            fm.AddToFile("TraceData5.txt", trace.ToJson());
+            fm.AddToFile("TraceData" + fileNumber + ".txt", trace.ToJson());
 
             LastTurnCount = pacManMovement.turnCount;
 
@@ -113,7 +114,7 @@ public class TraceModules : MonoBehaviour
 
             sui.rewardSelection = rewardSelection;
 
-            fm.AddToFile("ClosestRewardEveryTurn5.txt", sui.ToJson());
+            fm.AddToFile("ClosestRewardEveryTurn" + fileNumber + ".txt", sui.ToJson());
         }
     }
 

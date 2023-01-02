@@ -34,7 +34,7 @@ public class Manager : MonoBehaviour
     private void CreatePacman()
     {
         //InitNeuralNetworks
-        BackPropNN net = new BackPropNN(new int[] { 14, 25, 25, 4 }); //intiilize network
+        BackPropNN net = new BackPropNN(new int[] { 14, 25, 25, 4 }); //intialize network
         //net.Mutate();
         //LoadDataFromFiles();
 
@@ -46,7 +46,7 @@ public class Manager : MonoBehaviour
 
         pac.Init(net);
 
-        for(int j = 1; j <= 5; j++)
+        for(int j = 1; j <= 11; j++)
         {
             LoadDataFromFiles(j);
             for (int i=1; i<traceData.Length; i++)

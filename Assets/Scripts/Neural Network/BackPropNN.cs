@@ -203,7 +203,7 @@ public class BackPropNN
                 gamma[i] *= TanHDer(outputs[i]);
             }
 
-            //Caluclating detla weights
+            //Caluclating delta weights
             for (int i = 0; i < numberOfOuputs; i++)
             {
                 for (int j = 0; j < numberOfInputs; j++)
