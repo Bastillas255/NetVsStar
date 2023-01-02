@@ -39,8 +39,8 @@ public class Manager : MonoBehaviour
     {
         //InitNeuralNetworks
         NeuralNetwork net = new NeuralNetwork(layers);
-        net.Mutate();
-        LoadDataFromFiles();
+        //net.Mutate();
+        //LoadDataFromFiles();
 
         //Creamos un objeto Pacman nuevo
         pac = ((GameObject)Instantiate(pacPrefab, spawnSpot.transform.position, pacPrefab.transform.rotation)).GetComponent<PacManMovement>();
@@ -50,30 +50,33 @@ public class Manager : MonoBehaviour
 
         pac.Init(net);
 
-        for (int i=1; i<traceData.Length; i++)
+        for(int j = 1; j <= 5; j++)
         {
-            //Chequea si la línea actual es vacía o null, para evitar llamados innecesarios a TrainNN
-            if(!string.IsNullOrEmpty(traceData[i]))
+            LoadDataFromFiles(j);
+            for (int i=1; i<traceData.Length; i++)
             {
-                for (int j = 0; j < traceData.Length; j += 2)
+                //Chequea si la línea actual es vacía o null, para evitar llamados innecesarios a TrainNN
+                if(!string.IsNullOrEmpty(traceData[i]))
                 {
-                    if (traceData[0] == traceData[j])//checks if the data is from a turn when a reward is taken
-                    {
-                        if (traceData[1] == traceData[j + 1])
-                        {
-                            
-                            //Cada vez se carga la información correspondiente al turno que se está leyendo
-                            ChangeTurn(i);
-                            //Se entrena la red neuronal
-                            pac.TrainNN(stdArray, sui.rewardSelection);
-                        }
-                        
-                    }
+                    //for (int j = 0; j < traceData.Length; j += 2)
+                    //{
+                    //    if (traceData[0] == traceData[j])//checks if the data is from a turn when a reward is taken
+                    //    {
+                    //        if (traceData[1] == traceData[j + 1])
+                    //        {
+                                    //Cada vez se carga la información correspondiente al turno que se está leyendo
+                                    ChangeTurn(i);
+                                    //Se entrena la red neuronal
+                                    pac.TrainNN(stdArray, sui.rewardSelection);
+                    //        }
+                    //    }
+                    //}
+
+
                 }
-                
-               
             }
         }
+        
         Debug.Log("Training is done");
         //Guardar información de entrenamiento
         DataSaver ds = new DataSaver(net.GetLayers(), net.GetNeurons(), net.GetWeights());
@@ -81,11 +84,11 @@ public class Manager : MonoBehaviour
         fm.WriteToFile("TrainedNNData", nnData.ToJson());
     }
 
-    void LoadDataFromFiles()
+    void LoadDataFromFiles(int number)
     {
-        List<string> traceDataList = fm.GetListOfLines("TraceData.txt");
+        List<string> traceDataList = fm.GetListOfLines("TraceData" + number + ".txt");
         traceData = traceDataList.ToArray();
-        List<string> userOutputList = fm.GetListOfLines("ClosestRewardEveryTurn.txt");
+        List<string> userOutputList = fm.GetListOfLines("ClosestRewardEveryTurn" + number + ".txt");
         userOutputData = userOutputList.ToArray();
     }
 

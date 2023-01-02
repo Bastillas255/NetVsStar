@@ -70,6 +70,7 @@ public class PacManMovement : MonoBehaviour
         {
             while (true)
             {
+                //Debug.Log("Entrenando red neuronal");
                 //NN analyses inputs and their outputs are stored
                 nnOutput = net.FeedForward(traceData); //4 outputs, they return one of the rewards on the next to be made array
 
