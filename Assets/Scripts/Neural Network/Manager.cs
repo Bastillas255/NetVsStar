@@ -13,6 +13,8 @@ public class Manager : MonoBehaviour
     string[] traceData;
     string[] userOutputData;
 
+    public int trainingAmount;
+
     //pac stuff
     public GameObject pacPrefab;
     PacManMovement pac;
@@ -46,7 +48,7 @@ public class Manager : MonoBehaviour
 
         pac.Init(net);
 
-        for(int j = 1; j <= 11; j++)
+        for(int j = 1; j <= trainingAmount; j++)
         {
             LoadDataFromFiles(j);
             for (int i=1; i<traceData.Length; i++)

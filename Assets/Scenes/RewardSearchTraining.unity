@@ -984,7 +984,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b36e114c9052524db8e7b84044350a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onlyDisplayPathGizmos: 0
+  onlyDisplayPathGizmos: 1
   displayGridGizmos: 1
   player: {fileID: 128531656}
   unwalkableMask:
@@ -1345,7 +1345,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 502275958}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -15.91, y: 14.73, z: 0}
+  m_LocalPosition: {x: -30.38, y: -7.1, z: 0}
   m_LocalScale: {x: 0.9, y: 0.9, z: 1}
   m_Children: []
   m_Father: {fileID: 1534454816}
@@ -2683,7 +2683,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1011161151}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -26.15, y: -0.81, z: 0}
+  m_LocalPosition: {x: 0.22, y: -2.78, z: 0}
   m_LocalScale: {x: 0.9, y: 0.9, z: 1}
   m_Children: []
   m_Father: {fileID: 1534454816}
@@ -3865,6 +3865,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2d522a6ac3ef8045a54e6dafe626083, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trainingAmount: 40
   pacPrefab: {fileID: 2215815800667927638, guid: 477061bd1a3092e43a71886c3cb6cbba, type: 3}
   spawnSpot: {fileID: 2048684897}
 --- !u!114 &1434828378
@@ -4039,7 +4040,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1562020926}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.03, y: 8.89, z: 0}
+  m_LocalPosition: {x: 0.07, y: 9.17, z: 0}
   m_LocalScale: {x: 0.9, y: 0.9, z: 1}
   m_Children: []
   m_Father: {fileID: 1534454816}
@@ -4148,7 +4149,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1573138403}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -11.81, y: 4.81, z: 0}
+  m_LocalPosition: {x: -20.11, y: 6.98, z: 0}
   m_LocalScale: {x: 0.9, y: 0.9, z: 1}
   m_Children: []
   m_Father: {fileID: 1534454816}
@@ -4658,6 +4659,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2d522a6ac3ef8045a54e6dafe626083, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trainingAmount: 0
   pacPrefab: {fileID: 41085705}
   spawnSpot: {fileID: 2048684897}
 --- !u!114 &1762786990
@@ -4673,7 +4675,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pacObject: {fileID: 41085705}
-  fileNumber: 500
+  fileNumber: 40
   path: []
 --- !u!1 &1806829649
 GameObject:

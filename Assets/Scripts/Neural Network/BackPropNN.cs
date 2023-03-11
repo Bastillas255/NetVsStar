@@ -1,25 +1,16 @@
 using System;
 
-/// <summary>
-/// Simple MLP Neural Network
-/// </summary>
 public class BackPropNN
 {
-    int[] layer; //layer information
-    Layer[] layers; //layers in the network
+    int[] layer;
+    Layer[] layers;
 
-    /// <summary>
-    /// Constructor setting up layers
-    /// </summary>
-    /// <param name="layer">Layers of this network</param>
     public BackPropNN(int[] layer)
     {
-        //deep copy layers
         this.layer = new int[layer.Length];
         for (int i = 0; i < layer.Length; i++)
             this.layer[i] = layer[i];
 
-        //creates neural layers
         layers = new Layer[layer.Length - 1];
 
         for (int i = 0; i < layers.Length; i++)
@@ -28,53 +19,37 @@ public class BackPropNN
         }
     }
 
-    /// <summary>
-    /// High level feedforward for this network
-    /// </summary>
-    /// <param name="inputs">Inputs to be feed forwared</param>
-    /// <returns></returns>
     public float[] FeedForward(float[] inputs)
     {
-        //feed forward
         layers[0].FeedForward(inputs);
         for (int i = 1; i < layers.Length; i++)
         {
             layers[i].FeedForward(layers[i - 1].outputs);
         }
 
-        return layers[layers.Length - 1].outputs; //return output of last layer
+        return layers[layers.Length - 1].outputs;
     }
 
-    /// <summary>
-    /// High level back porpagation
-    /// Note: It is expexted the one feed forward was done before this back prop.
-    /// </summary>
-    /// <param name="expected">The expected output form the last feedforward</param>
     public void BackProp(float[] expected)
     {
-        // run over all layers backwards
         for (int i = layers.Length - 1; i >= 0; i--)
         {
             if (i == layers.Length - 1)
             {
-                layers[i].BackPropOutput(expected); //back prop output
+                layers[i].BackPropOutput(expected); 
             }
             else
             {
-                layers[i].BackPropHidden(layers[i + 1].gamma, layers[i + 1].weights); //back prop hidden
+                layers[i].BackPropHidden(layers[i + 1].gamma, layers[i + 1].weights); 
             }
         }
 
-        //Update weights
         for (int i = 0; i < layers.Length; i++)
         {
             layers[i].UpdateWeights();
         }
     }
 
-    /// <summary>
-    /// Each individual layer in the ML{
-    /// </summary>
     public class Layer
     {
         int numberOfInputs; //# of neurons in the previous layer
@@ -111,9 +86,6 @@ public class BackPropNN
             InitilizeWeights(); //initilize weights
         }
 
-        /// <summary>
-        /// Initilize weights between -0.5 and 0.5
-        /// </summary>
         public void InitilizeWeights()
         {
             for (int i = 0; i < numberOfOuputs; i++)
@@ -125,11 +97,6 @@ public class BackPropNN
             }
         }
 
-        /// <summary>
-        /// Feedforward this layer with a given input
-        /// </summary>
-        /// <param name="inputs">The output values of the previous layer</param>
-        /// <returns></returns>
         public float[] FeedForward(float[] inputs)
         {
             this.inputs = inputs;// keep shallow copy which can be used for back propagation
@@ -149,20 +116,11 @@ public class BackPropNN
             return outputs;
         }
 
-        /// <summary>
-        /// TanH derivate 
-        /// </summary>
-        /// <param name="value">An already computed TanH value</param>
-        /// <returns></returns>
         public float TanHDer(float value)
         {
             return 1 - (value * value);
         }
 
-        /// <summary>
-        /// Back propagation for the output layer
-        /// </summary>
-        /// <param name="expected">The expected output</param>
         public void BackPropOutput(float[] expected)
         {
             //Error dervative of the cost function
@@ -183,11 +141,6 @@ public class BackPropNN
             }
         }
 
-        /// <summary>
-        /// Back propagation for the hidden layers
-        /// </summary>
-        /// <param name="gammaForward">the gamma value of the forward layer</param>
-        /// <param name="weightsFoward">the weights of the forward layer</param>
         public void BackPropHidden(float[] gammaForward, float[,] weightsFoward)
         {
             //Caluclate new gamma using gamma sums of the forward layer
@@ -213,9 +166,6 @@ public class BackPropNN
             }
         }
 
-        /// <summary>
-        /// Updating weights
-        /// </summary>
         public void UpdateWeights()
         {
             for (int i = 0; i < numberOfOuputs; i++)
